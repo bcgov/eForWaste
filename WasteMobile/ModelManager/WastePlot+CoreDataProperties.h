@@ -46,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSDecimalNumber *surveyNetVal;
 @property (nullable, nonatomic, copy) NSString *surveyorName;
 @property (nullable, nonatomic, copy) NSString *weather;
+@property (nullable, nonatomic, copy) NSNumber *plotEstimatedVolume;
 @property (nullable, nonatomic, retain) NSSet<WastePiece *> *plotPiece;
 @property (nullable, nonatomic, retain) ShapeCode *plotShapeCode;
 @property (nullable, nonatomic, retain) PlotSizeCode *plotSizeCode;

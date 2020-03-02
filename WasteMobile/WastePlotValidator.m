@@ -103,8 +103,6 @@
                     if ([wp.topDiameter intValue] < minR ){
                         pieceErrorMessage = [pieceErrorMessage stringByAppendingString:[NSString stringWithFormat:@" Top cannot be less than %dr.\n", minR]];
                     }
-                    
-                    
                 }else if([wastePlot.plotStratum.stratumBlock.regionId intValue]== InteriorRegion){
 
                     
@@ -162,14 +160,6 @@
                     pieceErrorMessage = [pieceErrorMessage stringByAppendingString:@" Kind L, W, T missing butt end code."];
                 }
                 
-                if([wp.pieceMaterialKindCode.materialKindCode isEqualToString:@"W"] && [wp.pieceButtEndCode.buttEndCode isEqualToString:@"B"]){
-                    pieceErrorMessage = [pieceErrorMessage stringByAppendingString:@" Kind W, butt Code Broken not allowed."];
-                }
-                
-                if(wp.topDeduction && [wp.topDeduction integerValue] > 0 && wp.buttDeduction && [wp.buttDeduction intValue] > 0 && wp.lengthDeduction && [wp.lengthDeduction intValue] > 0){
-                    pieceErrorMessage = [pieceErrorMessage stringByAppendingString:@" more than 2 deductions.\n"];
-                }
-                
                 if([wp.pieceVolume doubleValue] <= 0){
                     pieceErrorMessage = [pieceErrorMessage stringByAppendingString:@" Net volume <= 0.\n"];
                 }
@@ -185,7 +175,7 @@
                     if([wp.pieceMaterialKindCode.materialKindCode isEqualToString:@"W"] && [sound floatValue] < 50.0f){
                         pieceErrorMessage = [pieceErrorMessage stringByAppendingString:@" Kind 'W' < 50% sound.\n"];
                     }
-                    if(wp.pieceMaterialKindCode && ([wp.pieceMaterialKindCode.materialKindCode isEqualToString:@"L"] || [wp.pieceMaterialKindCode.materialKindCode isEqualToString:@"T"]) && wp.pieceScaleGradeCode.scaleGradeCode && ([wp.pieceScaleGradeCode.scaleGradeCode isEqualToString:@"1"] || [wp.pieceScaleGradeCode.scaleGradeCode isEqualToString:@"2"]) && [sound doubleValue] < 50.0f ){
+                    if(([wp.piecePlot.plotStratum.stratumBlock.regionId integerValue] == InteriorRegion) && wp.pieceMaterialKindCode && ([wp.pieceMaterialKindCode.materialKindCode isEqualToString:@"L"] || [wp.pieceMaterialKindCode.materialKindCode isEqualToString:@"T"]) && wp.pieceScaleGradeCode.scaleGradeCode && ([wp.pieceScaleGradeCode.scaleGradeCode isEqualToString:@"1"] || [wp.pieceScaleGradeCode.scaleGradeCode isEqualToString:@"2"]) && [sound doubleValue] < 50.0f ){
                         pieceErrorMessage = [pieceErrorMessage stringByAppendingString:@" Log Grade 1,2 < 50% sound.\n"];
                     }
                 }
@@ -230,7 +220,7 @@
                         pieceWarning = [pieceWarning stringByAppendingString:@" Top or Butt out of range.\n"];
                     }else{
                         if([wp.length floatValue] >= 10.0 && labs([wp.buttDiameter integerValue] - [wp.topDiameter integerValue]) >= 4){
-                            if( labs([wp.topDiameter integerValue] - [wp.buttDiameter integerValue]) > ([wp.length floatValue]/10 * 1.25)){
+                            if( labs([wp.buttDiameter integerValue] - [wp.topDiameter integerValue]) > ([wp.length floatValue]/(10 * 1.25))){
                                 pieceWarning = [pieceWarning stringByAppendingString:@" Top or Butt out of range.\n"];
                             }
                         }
@@ -264,6 +254,13 @@
                     pieceWarning = [pieceWarning stringByAppendingString:@" Kind B-Breakage, Should be W-Bucking Waste?\n"];
                 }
             }
+            //changing from error to warning
+            if(wp.topDeduction && [wp.topDeduction integerValue] > 0 && wp.buttDeduction && [wp.buttDeduction intValue] > 0 && wp.lengthDeduction && [wp.lengthDeduction intValue] > 0){
+                pieceWarning = [pieceWarning stringByAppendingString:@" More than 2 deductions.\n"];
+            }
+            if(([wp.piecePlot.plotStratum.stratumBlock.regionId integerValue] == InteriorRegion) && [wp.pieceMaterialKindCode.materialKindCode isEqualToString:@"W"] && [wp.pieceButtEndCode.buttEndCode isEqualToString:@"B"]){
+                pieceWarning = [pieceWarning stringByAppendingString:@" Kind W, butt Code Broken not allowed. \n"];
+            }
             
             if (![pieceWarning isEqualToString:@""]){
                 //[errorMessageAry addObject:[NSString stringWithFormat:@"Piece %@: %@\n", wp.pieceNumber ,errorMessage]];
@@ -276,11 +273,12 @@
     }
     
     // Additional Error check
-    if(!wastePlot.surveyorName || [wastePlot.surveyorName isEqualToString:@""]){
-        errorMessage = [errorMessage stringByAppendingString:@"Error - Surveyor name missing."];
-        shortErrorMessage = [shortErrorMessage stringByAppendingFormat:@"%@ Surveyor namen is missing.\n",shortErrorMessageHeader];
+    if([wastePlot.plotStratum.stratumBlock.regionId integerValue] == InteriorRegion) {
+        if(!wastePlot.surveyorName || [wastePlot.surveyorName isEqualToString:@""]){
+            errorMessage = [errorMessage stringByAppendingString:@"Error - Surveyor name missing."];
+            shortErrorMessage = [shortErrorMessage stringByAppendingFormat:@"%@ Surveyor name is missing.\n",shortErrorMessageHeader];
+        }
     }
-    
     if(showDetail){
         return errorMessage;
     }else{

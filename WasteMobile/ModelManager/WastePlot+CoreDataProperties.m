@@ -53,6 +53,7 @@
 @dynamic sawlogPercent;
 @dynamic greenGradePercent;
 @dynamic dryGradePercent;
+@dynamic plotEstimatedVolume;
 @dynamic plotPile;
 
 @end

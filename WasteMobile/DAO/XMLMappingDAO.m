@@ -67,12 +67,13 @@
         [wasteAssessmentMappingAry addObject:@"WasteBlock:returnNumber:2:N:returnNumber:string::"];
         [wasteAssessmentMappingAry addObject:@"WasteBlock:surveyDate:3:N:surveyDate:date::"];
         [wasteAssessmentMappingAry addObject:@"Timbermark:timbermark:0:N:timberMark:string::"];
-        [wasteAssessmentMappingAry addObject:@"WasteBlock:blockMaturityCode:MaturityCode:N:WasteMaturityTypeCode:string::"];
+        [wasteAssessmentMappingAry addObject:@"WasteBlock:blockMaturityCode:MaturityCode:N:wasteMaturityTypeCode:string::"];
         [wasteAssessmentMappingAry addObject:@"WasteBlock:surveyArea:1:N:wasteNetArea:decimal::"];
         [wasteAssessmentMappingAry addObject:@"WasteBlock:surveyorLicence:0:N:wasteSurveyorLicence:string:"];
         [wasteAssessmentMappingAry addObject:@"WasteBlock:yearLoggedFrom:2:N:yearLoggedFrom:string:"];
         [wasteAssessmentMappingAry addObject:@"WasteBlock:yearLoggedTo:2:N:yearLoggedTo:string:"];
         [wasteAssessmentMappingAry addObject:@"WasteBlock:blockSiteCode:SiteCode:Y:wasteSiteTypeCode:string:"];
+        [wasteAssessmentMappingAry addObject:@"WasteBlock:ratioSamplingLog:0:Y::string:"];
 
         //extra fields for check values
         [wasteAssessmentMappingAry addObject:@"WasteBlock:wasteAssessmentAreaID:2:Y::string:"];
@@ -152,6 +153,7 @@
         [wastePlotMappingAry addObject:@"WastePlot:aggregateLicence:0:Y::string:"];
         [wastePlotMappingAry addObject:@"WastePlot:aggregateCutblock:0:Y::string:"];
         [wastePlotMappingAry addObject:@"WastePlot:aggregateCuttingPermit:0:Y::string:"];
+        [wastePlotMappingAry addObject:@"WastePlot:plotEstimatedVolume:2:N:plotEstimatedVolume:string:"];
         
         wastePieceMappingAry = [[NSMutableArray alloc] init];
         //xml fiels
@@ -184,7 +186,9 @@
         [wastePieceMappingAry addObject:@"WastePiece:sortNumber:2:Y::"];
         [wastePieceMappingAry addObject:@"WastePiece:piece:2:Y::"];
         [wastePieceMappingAry addObject:@"WastePiece:notes:0:Y::"];
-        [wastePieceMappingAry addObject:@"WastePiece:usercode:0:Y::"];  
+        [wastePieceMappingAry addObject:@"WastePiece:usercode:0:Y::"];
+        [wastePieceMappingAry addObject:@"WastePiece:addLength:2:N:addLength:string:"];
+        [wastePieceMappingAry addObject:@"WastePiece:farEnd:2:N:farEnd:string:"];
         
         //Extra entity
 
@@ -203,6 +207,7 @@
         [TimberMarkMappingAry addObject:@"Timebermark:yPrice:1:Y::"];
         [TimberMarkMappingAry addObject:@"Timebermark:hembalPrice:1:Y::"];
         [TimberMarkMappingAry addObject:@"Timebermark:deciduousPrice:1:Y::"];
+        [TimberMarkMappingAry addObject:@"Timebermark:benchmark:1:N:benchmarkVolume:string::"];
         
     }
 }

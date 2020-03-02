@@ -40,20 +40,21 @@
     
     
     float k = 0.0001571;
-    
+    float pi = 3.141592;
     float volume = 0;
-    NSDecimalNumberHandler *behavior = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain scale:4 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO];
-    
+    //NSDecimalNumberHandler *behavior = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain scale:4 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO];
+    NSDecimalNumberHandler *behavior = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain scale:3 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO];
     //NSLog(@"assessment method code = %@", wastePiece.piecePlot.plotStratum.stratumAssessmentMethodCode.assessmentMethodCode);
     
     if ([ws.stratumAssessmentMethodCode.assessmentMethodCode isEqualToString:@"P"] ||
         [ws.stratumAssessmentMethodCode.assessmentMethodCode isEqualToString:@"S"]){
         if ([wastePiece.pieceMaterialKindCode.materialKindCode isEqualToString:@"S"]){
-            volume =(((t - td) *(t - td)) + ((t - td) * (t - td))) * ((l - ld)/10.0) * k;
+            volume = ((((((t - td) * (t - td)) * pi) / 10000) + ((((t - td) * (t - td)) * pi) / 10000)) / 2) * (l - ld) / 10;
+            //volume =(((t - td) *(t - td)) + ((t - td) * (t - td))) * ((l - ld)/10.0) * k;
         }else{
-            volume =(((t - td) *(t - td)) + ((b - bd) * (b - bd))) * ((l - ld)/10.0) * k;
+            volume = ((((((t - td) * (t - td)) * pi) / 10000) + ((((b - bd) * (b - bd)) * pi) / 10000)) / 2) * (l - ld) / 10;
+            //volume =(((t - td) *(t - td)) + ((b - bd) * (b - bd))) * ((l - ld)/10.0) * k;
         }
-        
     }else if ([ws.stratumAssessmentMethodCode.assessmentMethodCode isEqualToString:@"O"]){
         //volume = [wastePiece.estimatedVolume floatValue];
         
@@ -63,8 +64,8 @@
         if ([wastePiece.pieceNumber rangeOfString:@"C"].location != NSNotFound){
             totalEstimate = [ws.checkTotalEstimatedVolume floatValue];
         }else{
-            totalEstimate = [ws.totalEstimatedVolume floatValue];
-            
+            //totalEstimate = [ws.totalEstimatedVolume floatValue];
+            totalEstimate = [wastePiece.piecePlot.plotEstimatedVolume floatValue];
             //we need to calculate the check estimated volume for original waste piece object
             wastePiece.checkPieceVolume =[[[NSDecimalNumber alloc] initWithFloat:([ws.checkTotalEstimatedVolume floatValue] * ([wastePiece.estimatedPercent floatValue] / 100.0))] decimalNumberByRoundingAccordingToBehavior:behavior];
         }
@@ -91,7 +92,6 @@
 
 +(void) calculateRate:(WasteBlock *) wasteBlock {
     NSDecimalNumberHandler *behavior = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain scale:2 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO];
-
     Timbermark *ptm = nil;
     Timbermark *stm = nil;
     for (Timbermark *tm in [wasteBlock.blockTimbermark allObjects]){
@@ -107,18 +107,21 @@
         // - static rate $1 for deciduous
         if([wasteBlock.regionId integerValue] == InteriorRegion) {
             tm.deciduousWMRF = [[[NSDecimalNumber alloc] initWithDouble: [tm.wmrf doubleValue] * [tm.deciduousPrice doubleValue]] decimalNumberByRoundingAccordingToBehavior:behavior];
-        }else{
-            tm.deciduousWMRF = [[NSDecimalNumber alloc] initWithFloat:1.0];
+        }else if([wasteBlock.regionId integerValue] == CoastRegion){
+            tm.deciduousWMRF = [[[NSDecimalNumber alloc] initWithDouble: [tm.wmrf doubleValue] * [tm.deciduousPrice doubleValue]] decimalNumberByRoundingAccordingToBehavior:behavior];
         }
         
         // - hembal rate = master rate * 0.25
-        tm.hembalWMRF = [[[NSDecimalNumber alloc] initWithDouble: [tm.wmrf doubleValue] * 0.25] decimalNumberByRoundingAccordingToBehavior:behavior];
+        //new change Hembal U = WMRF x Hembal U Stumpage Rate
+        tm.hembalWMRF = [[[NSDecimalNumber alloc] initWithDouble: [tm.wmrf doubleValue] * [tm.hembalPrice doubleValue]] decimalNumberByRoundingAccordingToBehavior:behavior];
         
         // - x rate = master rate * 0.25
-        tm.xWMRF = [[[NSDecimalNumber alloc] initWithDouble: [tm.wmrf doubleValue] * 0.25] decimalNumberByRoundingAccordingToBehavior:behavior];
+        //new change X Grade = WMRF x X Grade Stumpage Rate
+        tm.xWMRF = [[[NSDecimalNumber alloc] initWithDouble: [tm.wmrf doubleValue] * [tm.xPrice doubleValue]] decimalNumberByRoundingAccordingToBehavior:behavior];
         
         // - y rate is static rate 0.25
-        tm.yWMRF = [[NSDecimalNumber alloc] initWithDouble: 0.25];
+        //new change Y Grade = Y Grade Stumpage Rate
+        tm.yWMRF = [[NSDecimalNumber alloc] initWithDouble: [tm.yPrice doubleValue]];
         
         // - Other rate is wmrf * conifer
         tm.allSppJWMRF = [[[NSDecimalNumber alloc] initWithDouble: [tm.coniferWMRF doubleValue] * [tm.wmrf doubleValue] ] decimalNumberByRoundingAccordingToBehavior:behavior];
@@ -126,8 +129,8 @@
         //**** Original Rates ****
         if([wasteBlock.regionId integerValue] == InteriorRegion) {
             tm.orgDeciduousWMRF = [[[NSDecimalNumber alloc] initWithDouble: [tm.orgWMRF doubleValue] * [tm.deciduousPrice doubleValue]] decimalNumberByRoundingAccordingToBehavior:behavior];
-        }else{
-            tm.orgDeciduousWMRF = [[NSDecimalNumber alloc] initWithFloat:1.0];
+        }else if([wasteBlock.regionId integerValue] == CoastRegion){
+            tm.orgDeciduousWMRF = [[[NSDecimalNumber alloc] initWithDouble: [tm.orgWMRF doubleValue] * [tm.deciduousPrice doubleValue]] decimalNumberByRoundingAccordingToBehavior:behavior];
         }
         
         tm.orgHembalWMRF = [[[NSDecimalNumber alloc] initWithDouble: [tm.orgWMRF doubleValue] * 0.25] decimalNumberByRoundingAccordingToBehavior:behavior];
@@ -263,13 +266,13 @@
             }
         
             //update the benchmark
-            if (wasteBlock.blockMaturityCode){
+           /* if (wasteBlock.blockMaturityCode){
                 if ( [wasteBlock.blockMaturityCode.maturityCode isEqualToString:@"I"]){
                     tm.benchmark = [NSDecimalNumber decimalNumberWithString:@"10"];
                 }else if ([wasteBlock.blockMaturityCode.maturityCode isEqualToString:@"M"]){
                     tm.benchmark = [NSDecimalNumber decimalNumberWithString:@"35"];
                 }
-            }else if(wasteBlock.blockSiteCode){
+            }else*/ if(wasteBlock.blockSiteCode){
                 if ([wasteBlock.blockSiteCode.siteCode isEqualToString:@"DB"]){
                     tm.benchmark = [NSDecimalNumber decimalNumberWithString:@"4"];
                 }else if ([wasteBlock.blockSiteCode.siteCode isEqualToString:@"TZ"]){
@@ -285,13 +288,13 @@
                 tm.avoidable = [[[NSDecimalNumber alloc] initWithDouble:(blockBenchmark / ([wasteBlock.netArea doubleValue] - ignoreExtraStratumArea))] decimalNumberByRoundingAccordingToBehavior:behavior];
             }
             //update the benchmark
-            if (wasteBlock.blockCheckMaturityCode){
+            /*if (wasteBlock.blockCheckMaturityCode){
                 if ( [wasteBlock.blockCheckMaturityCode.maturityCode isEqualToString:@"I"]){
                     tm.benchmark = [NSDecimalNumber decimalNumberWithString:@"10"];
                 }else if ([wasteBlock.blockCheckMaturityCode.maturityCode isEqualToString:@"M"]){
                     tm.benchmark = [NSDecimalNumber decimalNumberWithString:@"35"];
                 }
-            }else if(wasteBlock.blockCheckSiteCode){
+            }else */if(wasteBlock.blockCheckSiteCode){
                 if ([wasteBlock.blockCheckSiteCode.siteCode isEqualToString:@"DB"]){
                     tm.benchmark = [NSDecimalNumber decimalNumberWithString:@"4"];
                 }else if ([wasteBlock.blockCheckSiteCode.siteCode isEqualToString:@"TZ"]){
@@ -922,6 +925,7 @@
                 
                     plot_counter = plot_counter + 1;
                     for(WastePiece* piece in wp.plotPiece){
+                        // && ![piece.pieceScaleGradeCode.scaleGradeCode isEqualToString:@"6"] this line NEEDS TO BE ADDDED FOR NEXT RELEASE below was added as part of EFORWASTE-86 so that grade 6 is not calculated in total cut cntrl and total billable
                         if(![piece.pieceScaleGradeCode.scaleGradeCode isEqualToString:@"Z"]){
                         //Calculate the piece value and the piece volume in per ha
                         NSDecimalNumber *pieceRateDN = [[[NSDecimalNumber alloc] initWithDouble:[self pieceRate:piece.pieceScaleSpeciesCode.scaleSpeciesCode withGrade:piece.pieceScaleGradeCode.scaleGradeCode
@@ -1166,7 +1170,12 @@
                                 wp.plotCoastStat.gradeUHBValue = [wp.plotCoastStat.gradeUHBValue decimalNumberByAdding:valueDN];
                                 wp.plotCoastStat.gradeUHBVolumeHa = [wp.plotCoastStat.gradeUHBVolumeHa decimalNumberByAdding:pieceVolumeHaDN];
                                 wp.plotCoastStat.gradeUHBVolume = [wp.plotCoastStat.gradeUHBVolume decimalNumberByAdding:pieceVolumeDN];
-                            }else if([piece.pieceScaleGradeCode.scaleGradeCode isEqualToString:@"X"] && ([piece.pieceScaleSpeciesCode.scaleSpeciesCode isEqualToString:@"HE"]||[piece.pieceScaleSpeciesCode.scaleSpeciesCode isEqualToString:@"BA"])){
+                            }else if([piece.pieceScaleGradeCode.scaleGradeCode isEqualToString:@"U"] && (!([piece.pieceScaleSpeciesCode.scaleSpeciesCode isEqualToString:@"HE"]||[piece.pieceScaleSpeciesCode.scaleSpeciesCode isEqualToString:@"BA"])) ){
+                                wp.plotCoastStat.gradeUValueHa = [wp.plotCoastStat.gradeUValueHa decimalNumberByAdding:valueHaDN];
+                                wp.plotCoastStat.gradeUValue = [wp.plotCoastStat.gradeUValue decimalNumberByAdding:valueDN];
+                                wp.plotCoastStat.gradeUVolumeHa = [wp.plotCoastStat.gradeUVolumeHa decimalNumberByAdding:pieceVolumeHaDN];
+                                wp.plotCoastStat.gradeUVolume = [wp.plotCoastStat.gradeUVolume decimalNumberByAdding:pieceVolumeDN];
+                            }else if([piece.pieceScaleGradeCode.scaleGradeCode isEqualToString:@"X"]){
                                 wp.plotCoastStat.gradeXHBValueHa = [wp.plotCoastStat.gradeXHBValueHa decimalNumberByAdding:valueHaDN];
                                 wp.plotCoastStat.gradeXHBValue = [wp.plotCoastStat.gradeXHBValue decimalNumberByAdding:valueDN];
                                 wp.plotCoastStat.gradeXHBVolumeHa = [wp.plotCoastStat.gradeXHBVolumeHa decimalNumberByAdding:pieceVolumeHaDN];
@@ -1177,10 +1186,12 @@
                                 wp.plotCoastStat.gradeJVolumeHa = [wp.plotCoastStat.gradeJVolumeHa decimalNumberByAdding:pieceVolumeHaDN];
                                 wp.plotCoastStat.gradeJVolume = [wp.plotCoastStat.gradeJVolume decimalNumberByAdding:pieceVolumeDN];
                             }
+                            if(![piece.pieceScaleGradeCode.scaleGradeCode isEqualToString:@"Y"] ){
                             wp.plotCoastStat.totalBillValue =[wp.plotCoastStat.totalBillValue decimalNumberByAdding:valueDN];
                             wp.plotCoastStat.totalBillValueHa =[wp.plotCoastStat.totalBillValueHa decimalNumberByAdding:valueHaDN];
                             wp.plotCoastStat.totalBillVolumeHa =[wp.plotCoastStat.totalBillVolumeHa decimalNumberByAdding:pieceVolumeHaDN];
                             wp.plotCoastStat.totalBillVolume =[wp.plotCoastStat.totalBillVolume decimalNumberByAdding:pieceVolumeDN];
+                            }
                         }
                         wp.plotCoastStat.totalControlVolumeHa =[wp.plotCoastStat.totalControlVolumeHa decimalNumberByAdding:pieceVolumeHaDN];
                         wp.plotCoastStat.totalControlVolume =[wp.plotCoastStat.totalControlVolume decimalNumberByAdding:pieceVolumeDN];
@@ -1193,6 +1204,8 @@
                     ws.stratumCoastStat.gradeYVolumeHa = [ws.stratumCoastStat.gradeYVolumeHa decimalNumberByAdding:wp.plotCoastStat.gradeYVolumeHa];
                     ws.stratumCoastStat.gradeUHBValueHa = [ws.stratumCoastStat.gradeUHBValueHa decimalNumberByAdding:wp.plotCoastStat.gradeUHBValueHa];
                     ws.stratumCoastStat.gradeUHBVolumeHa = [ws.stratumCoastStat.gradeUHBVolumeHa decimalNumberByAdding:wp.plotCoastStat.gradeUHBVolumeHa];
+                    ws.stratumCoastStat.gradeUValueHa = [ws.stratumCoastStat.gradeUValueHa decimalNumberByAdding:wp.plotCoastStat.gradeUValueHa];
+                    ws.stratumCoastStat.gradeUVolumeHa = [ws.stratumCoastStat.gradeUVolumeHa decimalNumberByAdding:wp.plotCoastStat.gradeUVolumeHa];
                     ws.stratumCoastStat.gradeXHBValueHa = [ws.stratumCoastStat.gradeXHBValueHa decimalNumberByAdding:wp.plotCoastStat.gradeXHBValueHa];
                     ws.stratumCoastStat.gradeXHBVolumeHa = [ws.stratumCoastStat.gradeXHBVolumeHa decimalNumberByAdding:wp.plotCoastStat.gradeXHBVolumeHa];
                     ws.stratumCoastStat.totalBillValueHa = [ws.stratumCoastStat.totalBillValueHa decimalNumberByAdding:wp.plotCoastStat.totalBillValueHa];
@@ -1210,6 +1223,8 @@
                     ws.stratumCoastStat.gradeYVolumeHa = [ws.stratumCoastStat.gradeYVolumeHa decimalNumberByDividingBy:[[NSDecimalNumber alloc] initWithInt:plot_counter ] withBehavior:behaviorD4];
                     ws.stratumCoastStat.gradeUHBValueHa = [ws.stratumCoastStat.gradeUHBValueHa decimalNumberByDividingBy:[[NSDecimalNumber alloc] initWithInt:plot_counter ] withBehavior:behaviorD2];
                     ws.stratumCoastStat.gradeUHBVolumeHa = [ws.stratumCoastStat.gradeUHBVolumeHa decimalNumberByDividingBy:[[NSDecimalNumber alloc] initWithInt:plot_counter ] withBehavior:behaviorD4];
+                    ws.stratumCoastStat.gradeUValueHa = [ws.stratumCoastStat.gradeUValueHa decimalNumberByDividingBy:[[NSDecimalNumber alloc] initWithInt:plot_counter ] withBehavior:behaviorD2];
+                    ws.stratumCoastStat.gradeUVolumeHa = [ws.stratumCoastStat.gradeUVolumeHa decimalNumberByDividingBy:[[NSDecimalNumber alloc] initWithInt:plot_counter ] withBehavior:behaviorD4];
                     ws.stratumCoastStat.gradeXHBValueHa = [ws.stratumCoastStat.gradeXHBValueHa decimalNumberByDividingBy:[[NSDecimalNumber alloc] initWithInt:plot_counter ] withBehavior:behaviorD2];
                     ws.stratumCoastStat.gradeXHBVolumeHa = [ws.stratumCoastStat.gradeXHBVolumeHa decimalNumberByDividingBy:[[NSDecimalNumber alloc] initWithInt:plot_counter ] withBehavior:behaviorD4];
                     ws.stratumCoastStat.totalBillValueHa = [ws.stratumCoastStat.totalBillValueHa decimalNumberByDividingBy:[[NSDecimalNumber alloc] initWithInt:plot_counter ] withBehavior:behaviorD2];
@@ -1224,6 +1239,8 @@
                 ws.stratumCoastStat.gradeYVolume= [ws.stratumCoastStat.gradeYVolumeHa decimalNumberByMultiplyingBy:ws.stratumSurveyArea withBehavior:behaviorD4];
                 ws.stratumCoastStat.gradeUHBValue = [ws.stratumCoastStat.gradeUHBValueHa decimalNumberByMultiplyingBy:ws.stratumSurveyArea withBehavior:behaviorD2];
                 ws.stratumCoastStat.gradeUHBVolume = [ws.stratumCoastStat.gradeUHBVolumeHa decimalNumberByMultiplyingBy:ws.stratumSurveyArea withBehavior:behaviorD4];
+                ws.stratumCoastStat.gradeUValue = [ws.stratumCoastStat.gradeUValueHa decimalNumberByMultiplyingBy:ws.stratumSurveyArea withBehavior:behaviorD2];
+                ws.stratumCoastStat.gradeUVolume = [ws.stratumCoastStat.gradeUVolumeHa decimalNumberByMultiplyingBy:ws.stratumSurveyArea withBehavior:behaviorD4];
                 ws.stratumCoastStat.gradeXHBValue = [ws.stratumCoastStat.gradeXHBValueHa decimalNumberByMultiplyingBy:ws.stratumSurveyArea withBehavior:behaviorD2];
                 ws.stratumCoastStat.gradeXHBVolume = [ws.stratumCoastStat.gradeXHBVolumeHa decimalNumberByMultiplyingBy:ws.stratumSurveyArea withBehavior:behaviorD4];
                 ws.stratumCoastStat.totalBillValue = [ws.stratumCoastStat.totalBillValueHa decimalNumberByMultiplyingBy:ws.stratumSurveyArea withBehavior:behaviorD2];
@@ -1238,6 +1255,8 @@
             wasteBlock.blockCoastStat.gradeYVolumeHa= [wasteBlock.blockCoastStat.gradeYVolumeHa decimalNumberByAdding:ws.stratumCoastStat.gradeYVolumeHa];
             wasteBlock.blockCoastStat.gradeUHBValueHa = [wasteBlock.blockCoastStat.gradeUHBValueHa decimalNumberByAdding:ws.stratumCoastStat.gradeUHBValueHa];
             wasteBlock.blockCoastStat.gradeUHBVolumeHa = [wasteBlock.blockCoastStat.gradeUHBVolumeHa decimalNumberByAdding:ws.stratumCoastStat.gradeUHBVolumeHa];
+            wasteBlock.blockCoastStat.gradeUValueHa = [wasteBlock.blockCoastStat.gradeUValueHa decimalNumberByAdding:ws.stratumCoastStat.gradeUValueHa];
+            wasteBlock.blockCoastStat.gradeUVolumeHa = [wasteBlock.blockCoastStat.gradeUVolumeHa decimalNumberByAdding:ws.stratumCoastStat.gradeUVolumeHa];
             wasteBlock.blockCoastStat.gradeXHBValueHa = [wasteBlock.blockCoastStat.gradeXHBValueHa decimalNumberByAdding:ws.stratumCoastStat.gradeXHBValueHa];
             wasteBlock.blockCoastStat.gradeXHBVolumeHa = [wasteBlock.blockCoastStat.gradeXHBVolumeHa decimalNumberByAdding:ws.stratumCoastStat.gradeXHBVolumeHa];
             wasteBlock.blockCoastStat.totalBillValueHa = [wasteBlock.blockCoastStat.totalBillValueHa decimalNumberByAdding:ws.stratumCoastStat.totalBillValueHa];
@@ -1251,6 +1270,8 @@
             wasteBlock.blockCoastStat.gradeYVolume= [wasteBlock.blockCoastStat.gradeYVolume decimalNumberByAdding:ws.stratumCoastStat.gradeYVolume ];
             wasteBlock.blockCoastStat.gradeUHBValue = [wasteBlock.blockCoastStat.gradeUHBValue decimalNumberByAdding:ws.stratumCoastStat.gradeUHBValue ];
             wasteBlock.blockCoastStat.gradeUHBVolume = [wasteBlock.blockCoastStat.gradeUHBVolume decimalNumberByAdding:ws.stratumCoastStat.gradeUHBVolume ];
+            wasteBlock.blockCoastStat.gradeUValue = [wasteBlock.blockCoastStat.gradeUValue decimalNumberByAdding:ws.stratumCoastStat.gradeUValue ];
+            wasteBlock.blockCoastStat.gradeUVolume = [wasteBlock.blockCoastStat.gradeUVolume decimalNumberByAdding:ws.stratumCoastStat.gradeUVolume ];
             wasteBlock.blockCoastStat.gradeXHBValue = [wasteBlock.blockCoastStat.gradeXHBValue decimalNumberByAdding:ws.stratumCoastStat.gradeXHBValue ];
             wasteBlock.blockCoastStat.gradeXHBVolume = [wasteBlock.blockCoastStat.gradeXHBVolume decimalNumberByAdding:ws.stratumCoastStat.gradeXHBVolume ];
             wasteBlock.blockCoastStat.totalBillValue = [wasteBlock.blockCoastStat.totalBillValue decimalNumberByAdding:ws.stratumCoastStat.totalBillValue ];
@@ -1270,6 +1291,8 @@
             [[NSDecimalNumber alloc] initWithInt:0] : [wasteBlock.blockCoastStat.gradeJValueHa decimalNumberByDividingBy:wasteBlock.surveyArea withBehavior:behaviorD2];
             wasteBlock.blockCoastStat.gradeUHBValueHa = [wasteBlock.surveyArea floatValue] == 0 ?
             [[NSDecimalNumber alloc] initWithInt:0] :[wasteBlock.blockCoastStat.gradeUHBValueHa decimalNumberByDividingBy:wasteBlock.surveyArea  withBehavior:behaviorD2];
+            wasteBlock.blockCoastStat.gradeUValueHa = [wasteBlock.surveyArea floatValue] == 0 ?
+            [[NSDecimalNumber alloc] initWithInt:0] :[wasteBlock.blockCoastStat.gradeUValueHa decimalNumberByDividingBy:wasteBlock.surveyArea  withBehavior:behaviorD2];
             wasteBlock.blockCoastStat.gradeYValueHa = [wasteBlock.surveyArea floatValue] == 0 ?
             [[NSDecimalNumber alloc] initWithInt:0] :[wasteBlock.blockCoastStat.gradeYValueHa decimalNumberByDividingBy:wasteBlock.surveyArea  withBehavior:behaviorD2];
             wasteBlock.blockCoastStat.gradeXHBValueHa = [wasteBlock.surveyArea floatValue] == 0 ?
@@ -1283,6 +1306,8 @@
             [[NSDecimalNumber alloc] initWithInt:0] : [wasteBlock.blockCoastStat.gradeJVolume decimalNumberByDividingBy:wasteBlock.surveyArea withBehavior:behaviorD4];
             wasteBlock.blockCoastStat.gradeUHBVolumeHa = [wasteBlock.surveyArea floatValue] == 0 ?
             [[NSDecimalNumber alloc] initWithInt:0] : [wasteBlock.blockCoastStat.gradeUHBVolume decimalNumberByDividingBy:wasteBlock.surveyArea  withBehavior:behaviorD4];
+            wasteBlock.blockCoastStat.gradeUVolumeHa = [wasteBlock.surveyArea floatValue] == 0 ?
+            [[NSDecimalNumber alloc] initWithInt:0] : [wasteBlock.blockCoastStat.gradeUVolume decimalNumberByDividingBy:wasteBlock.surveyArea  withBehavior:behaviorD4];
             wasteBlock.blockCoastStat.gradeYVolumeHa= [wasteBlock.surveyArea floatValue] == 0 ?
             [[NSDecimalNumber alloc] initWithInt:0] : [wasteBlock.blockCoastStat.gradeYVolume decimalNumberByDividingBy:wasteBlock.surveyArea  withBehavior:behaviorD4];
             wasteBlock.blockCoastStat.gradeXHBVolumeHa = [wasteBlock.surveyArea floatValue] == 0 ?
@@ -1348,6 +1373,10 @@
     stat.gradeUHBValueHa = [[NSDecimalNumber alloc] initWithInt:0];
     stat.gradeUHBVolume = [[NSDecimalNumber alloc] initWithInt:0];
     stat.gradeUHBVolumeHa = [[NSDecimalNumber alloc] initWithInt:0];
+    stat.gradeUValue = [[NSDecimalNumber alloc] initWithInt:0];
+    stat.gradeUValueHa = [[NSDecimalNumber alloc] initWithInt:0];
+    stat.gradeUVolume = [[NSDecimalNumber alloc] initWithInt:0];
+    stat.gradeUVolumeHa = [[NSDecimalNumber alloc] initWithInt:0];
     stat.gradeXHBValue = [[NSDecimalNumber alloc] initWithInt:0];
     stat.gradeXHBValueHa = [[NSDecimalNumber alloc] initWithInt:0];
     stat.gradeXHBVolume = [[NSDecimalNumber alloc] initWithInt:0];

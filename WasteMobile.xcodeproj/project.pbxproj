@@ -284,6 +284,10 @@
 		2745696F1E5B9C9B000F3A6C /* XMLToESFMappingDAO.m in Sources */ = {isa = PBXBuildFile; fileRef = 2745696E1E5B9C9B000F3A6C /* XMLToESFMappingDAO.m */; };
 		274569761E64DA49000F3A6C /* ExportUserData+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 274569731E64DA49000F3A6C /* ExportUserData+CoreDataClass.m */; };
 		274569771E64DA49000F3A6C /* ExportUserData+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 274569751E64DA49000F3A6C /* ExportUserData+CoreDataProperties.m */; };
+		8B1CEAD52357BDA700A98BAF /* BTSTable4.html in Resources */ = {isa = PBXBuildFile; fileRef = 8B1CEAD42357BDA700A98BAF /* BTSTable4.html */; };
+		8B1CEAD72357BE2600A98BAF /* BTSRow4.html in Resources */ = {isa = PBXBuildFile; fileRef = 8B1CEAD62357BE2600A98BAF /* BTSRow4.html */; };
+		8B1CEAD92357BE5F00A98BAF /* BTSRow5.html in Resources */ = {isa = PBXBuildFile; fileRef = 8B1CEAD82357BE5F00A98BAF /* BTSRow5.html */; };
+		8B1CEADB2357BE8B00A98BAF /* BTSRow6.html in Resources */ = {isa = PBXBuildFile; fileRef = 8B1CEADA2357BE8B00A98BAF /* BTSRow6.html */; };
 		8B5A9DEB22133ECA00AFD8FC /* InteriorCedarMaturityCode+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B8EE9F7220E3A9C00BCC12E /* InteriorCedarMaturityCode+CoreDataProperties.m */; };
 		8B5A9DEC22133ECF00AFD8FC /* InteriorCedarMaturityCode+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B8EE9F6220E3A9C00BCC12E /* InteriorCedarMaturityCode+CoreDataClass.m */; };
 		8B5A9E1E222DB12000AFD8FC /* PilePlotViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B5A9E1D222DB12000AFD8FC /* PilePlotViewController.m */; };
@@ -575,6 +579,11 @@
 		274569741E64DA49000F3A6C /* ExportUserData+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ExportUserData+CoreDataProperties.h"; sourceTree = "<group>"; };
 		274569751E64DA49000F3A6C /* ExportUserData+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ExportUserData+CoreDataProperties.m"; sourceTree = "<group>"; };
 		8B05FADD2203853E00353A88 /* WasteDataModel v2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "WasteDataModel v2.xcdatamodel"; sourceTree = "<group>"; };
+		8B1CEAD32357993200A98BAF /* EForWasteBC.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EForWasteBC.entitlements; sourceTree = "<group>"; };
+		8B1CEAD42357BDA700A98BAF /* BTSTable4.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = BTSTable4.html; sourceTree = "<group>"; };
+		8B1CEAD62357BE2600A98BAF /* BTSRow4.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = BTSRow4.html; sourceTree = "<group>"; };
+		8B1CEAD82357BE5F00A98BAF /* BTSRow5.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = BTSRow5.html; sourceTree = "<group>"; };
+		8B1CEADA2357BE8B00A98BAF /* BTSRow6.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = BTSRow6.html; sourceTree = "<group>"; };
 		8B5A9E1C222DB12000AFD8FC /* PilePlotViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PilePlotViewController.h; sourceTree = "<group>"; };
 		8B5A9E1D222DB12000AFD8FC /* PilePlotViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PilePlotViewController.m; sourceTree = "<group>"; };
 		8B5A9E1F222DCC2100AFD8FC /* PileHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PileHeaderView.h; sourceTree = "<group>"; };
@@ -599,6 +608,7 @@
 		8B8EE9F5220E3A9C00BCC12E /* InteriorCedarMaturityCode+CoreDataClass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "InteriorCedarMaturityCode+CoreDataClass.h"; sourceTree = "<group>"; };
 		8B8EE9F6220E3A9C00BCC12E /* InteriorCedarMaturityCode+CoreDataClass.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "InteriorCedarMaturityCode+CoreDataClass.m"; sourceTree = "<group>"; };
 		8B8EE9F7220E3A9C00BCC12E /* InteriorCedarMaturityCode+CoreDataProperties.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "InteriorCedarMaturityCode+CoreDataProperties.m"; sourceTree = "<group>"; };
+		8BB6D7782342A2BC003528E5 /* WasteDataModel v3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "WasteDataModel v3.xcdatamodel"; sourceTree = "<group>"; };
 		961B114022720ADB0088283A /* AggregatePlotTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AggregatePlotTableViewCell.m; sourceTree = "<group>"; };
 		961B114222720AEB0088283A /* AggregatePlotTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AggregatePlotTableViewCell.h; sourceTree = "<group>"; };
 		970D1383191D94460010B797 /* WasteBlockCellTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WasteBlockCellTableViewCell.h; sourceTree = "<group>"; };
@@ -733,7 +743,6 @@
 			children = (
 				1534BB8919EF0CD4001D6123 /* WasteCalculator.h */,
 				1534BB8A19EF0CD4001D6123 /* WasteCalculator.m */,
-				150DDC7F1B12D7C5001083E3 /* WastePlotValidator.h */,
 				150DDC801B12D7C5001083E3 /* WastePlotValidator.m */,
 				15B5D78A1E4B8194008EB5D5 /* WasteImportBlockValidator.h */,
 				15B5D78B1E4B8194008EB5D5 /* WasteImportBlockValidator.m */,
@@ -780,6 +789,7 @@
 		15A5DF9619D384990075665E /* DTO */ = {
 			isa = PBXGroup;
 			children = (
+				150DDC7F1B12D7C5001083E3 /* WastePlotValidator.h */,
 				15A5DF9719D385AD0075665E /* SearchResultDTO.h */,
 				15A5DF9819D385AD0075665E /* SearchResultDTO.m */,
 				154464E319E498EC00E7959D /* WasteBlockDTO.h */,
@@ -820,6 +830,7 @@
 		15BF98AA1E2EE43A004D8F12 /* EForWasteBC */ = {
 			isa = PBXGroup;
 			children = (
+				8B1CEAD32357993200A98BAF /* EForWasteBC.entitlements */,
 				15213A1520C060070007B91A /* EForWasteBC-Info.plist */,
 				15BF98AB1E2EEA37004D8F12 /* UI */,
 				15BF98A71E2EE423004D8F12 /* EForWasteBC.storyboard */,
@@ -844,6 +855,10 @@
 				15BF98BE1E36BE7E004D8F12 /* BTSRow2.html */,
 				15BF98C01E36BEC2004D8F12 /* BTSRow3.html */,
 				15BF98C21E36C543004D8F12 /* BTSTable2.html */,
+				8B1CEAD42357BDA700A98BAF /* BTSTable4.html */,
+				8B1CEAD62357BE2600A98BAF /* BTSRow4.html */,
+				8B1CEAD82357BE5F00A98BAF /* BTSRow5.html */,
+				8B1CEADA2357BE8B00A98BAF /* BTSRow6.html */,
 			);
 			name = BlockTypeSummaryReport;
 			sourceTree = "<group>";
@@ -1309,7 +1324,7 @@
 				ORGANIZATIONNAME = "Salus Systems";
 				TargetAttributes = {
 					15BF980A1E2EDC8E004D8F12 = {
-						DevelopmentTeam = L796QSLV3E;
+						DevelopmentTeam = TM6UEX2F65;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.GameCenter.iOS = {
@@ -1321,10 +1336,13 @@
 							com.apple.Keychain = {
 								enabled = 0;
 							};
+							com.apple.Push = {
+								enabled = 1;
+							};
 						};
 					};
 					F4EECF0D177C99F400778578 = {
-						DevelopmentTeam = L796QSLV3E;
+						DevelopmentTeam = TM6UEX2F65;
 					};
 				};
 			};
@@ -1353,6 +1371,7 @@
 			files = (
 				15BF98751E2EDC8E004D8F12 /* InfoPlist.strings in Resources */,
 				15BF98A91E2EE423004D8F12 /* EForWasteBC.storyboard in Resources */,
+				8B1CEAD92357BE5F00A98BAF /* BTSRow5.html in Resources */,
 				15BF98761E2EDC8E004D8F12 /* Images.xcassets in Resources */,
 				15BF98C61E37E230004D8F12 /* BTSTable3.html in Resources */,
 				15BF98771E2EDC8E004D8F12 /* arrow-down-icon.png in Resources */,
@@ -1374,6 +1393,7 @@
 				15BF98C91E37E238004D8F12 /* BTSRow3.html in Resources */,
 				15BF98851E2EDC8E004D8F12 /* Saved-icon.png in Resources */,
 				15BF98861E2EDC8E004D8F12 /* Default-568h@2x.png in Resources */,
+				8B1CEAD52357BDA700A98BAF /* BTSTable4.html in Resources */,
 				15BF98871E2EDC8E004D8F12 /* TABLE2_1.html in Resources */,
 				15BF98881E2EDC8E004D8F12 /* arrow.png in Resources */,
 				15BF98891E2EDC8E004D8F12 /* MainStoryboard.storyboard in Resources */,
@@ -1390,6 +1410,8 @@
 				15BF98931E2EDC8E004D8F12 /* ForestServiceLogo_Oval-colour.gif in Resources */,
 				15BF98941E2EDC8E004D8F12 /* ROW_2.html in Resources */,
 				15BF98951E2EDC8E004D8F12 /* TITLE.html in Resources */,
+				8B1CEAD72357BE2600A98BAF /* BTSRow4.html in Resources */,
+				8B1CEADB2357BE8B00A98BAF /* BTSRow6.html in Resources */,
 				15BF98961E2EDC8E004D8F12 /* menu@2x.png in Resources */,
 				15BF98971E2EDC8E004D8F12 /* TABLE1_3.html in Resources */,
 				15BF98C71E37E233004D8F12 /* BTSRow1.html in Resources */,
@@ -1783,19 +1805,20 @@
 		15BF98A11E2EDC8E004D8F12 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "EForWasteBC-Prod";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "EForWasteBC-test";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-EForWaste";
+				CODE_SIGN_ENTITLEMENTS = EForWasteBC.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = L796QSLV3E;
+				DEVELOPMENT_TEAM = TM6UEX2F65;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "WasteMobile/WasteMobile-Prefix.pch";
 				HEADER_SEARCH_PATHS = "$(SDKROOT)/usr/include/libxml2";
 				INFOPLIST_FILE = "EForWasteBC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LIBRARY_SEARCH_PATHS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = EForWasteBC;
+				PRODUCT_BUNDLE_IDENTIFIER = EForWasteBCTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1808,19 +1831,20 @@
 		15BF98A21E2EDC8E004D8F12 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "EForWasteBC-Prod";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "EForWasteBC-test";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-EForWaste";
+				CODE_SIGN_ENTITLEMENTS = EForWasteBC.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = L796QSLV3E;
+				DEVELOPMENT_TEAM = TM6UEX2F65;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "WasteMobile/WasteMobile-Prefix.pch";
 				HEADER_SEARCH_PATHS = "$(SDKROOT)/usr/include/libxml2";
 				INFOPLIST_FILE = "EForWasteBC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LIBRARY_SEARCH_PATHS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = EForWasteBC;
+				PRODUCT_BUNDLE_IDENTIFIER = EForWasteBCTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1936,7 +1960,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = L796QSLV3E;
+				DEVELOPMENT_TEAM = TM6UEX2F65;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "WasteMobile/WasteMobile-Prefix.pch";
 				HEADER_SEARCH_PATHS = "$(SDKROOT)/usr/include/libxml2";
@@ -1959,7 +1983,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = L796QSLV3E;
+				DEVELOPMENT_TEAM = TM6UEX2F65;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "WasteMobile/WasteMobile-Prefix.pch";
 				HEADER_SEARCH_PATHS = "$(SDKROOT)/usr/include/libxml2";
@@ -2011,10 +2035,11 @@
 		97E3F8671905BA1D00EAB073 /* WasteDataModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				8BB6D7782342A2BC003528E5 /* WasteDataModel v3.xcdatamodel */,
 				8B05FADD2203853E00353A88 /* WasteDataModel v2.xcdatamodel */,
 				97E3F8681905BA1D00EAB073 /* WasteDataModel.xcdatamodel */,
 			);
-			currentVersion = 8B05FADD2203853E00353A88 /* WasteDataModel v2.xcdatamodel */;
+			currentVersion = 8BB6D7782342A2BC003528E5 /* WasteDataModel v3.xcdatamodel */;
 			path = WasteDataModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

@@ -21,6 +21,7 @@ typedef enum MergeOutcomeCode{
 +(WasteBlock *) getWasteBlockByCutBlockId:(NSString *) cutBlockId reportingUnitId:(NSString *)reportUnitId;
 +(WasteBlock *) getWasteBlockByAssessmentAreaId:(NSString *) assessmentAreaId;
 +(WasteBlock *) getWasteBlockByRU:(NSString *) ru cutBlockId:(NSString *)cutBlockId license:(NSString*)license cutPermit:(NSString*)cutPermit;
++(WasteBlock *) getWasteBlockByRUCheckDuplicate:(NSString *) ru cutBlockId:(NSString *)cutBlockId license:(NSString*)license cutPermit:(NSString*)cutPermit;
 +(WasteBlock *) getWasteBlockByRUButWAID:(NSString *) ru cutBlockId:(NSString *)cutBlockId license:(NSString*)license cutPermit:(NSString*)cutPermit wasteAsseID:(NSString *)wasteAsseID;
 +(WasteBlock *) createEmptyCutBlock:(int) regionId ratioSample:(BOOL)ratioSample isAggregate:(BOOL)isAggregate;
 +(Timbermark *) createEmptyTimbermark;
