@@ -36,11 +36,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.3.0</string>
+	<string>1.4.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1666</string>
+	<string>3041</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>
@@ -97,7 +97,7 @@
 		</dict>
 	</array>
 	<key>iForWasteVersionNumber</key>
-	<string>EForWasteBC 1.3.0</string>
+	<string>EForWasteBC 1.4.0 Test</string>
 	<key>iForWasteWebServiceEndPoint</key>
 	<string></string>
 </dict>

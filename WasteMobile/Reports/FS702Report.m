@@ -48,8 +48,7 @@
         NSLog(@"File exists already");
         return Fail_Filename_Exist;
     }
-    
-    
+
     // check if we got WasteBlock && WastePlot
     if(wastBlock==nil){
         return Fail_Unknown;
@@ -68,21 +67,30 @@
     
     
     // LOAD STYLE TEMPLATE
-    //tmpPath = [[NSBundle mainBundle] pathForResource: @"CSS_2" ofType: @"html"];
-    tmpPath = [tempFilePath stringByAppendingString:@"CSS_2.html"];
+    tmpPath = [[NSBundle mainBundle] pathForResource: @"CSS_2" ofType: @"html"];
+    //tmpPath = [tempFilePath stringByAppendingString:@"CSS_2.html"];
     CSS = [NSString stringWithContentsOfFile: tmpPath encoding:NSUTF8StringEncoding error: &errorForHTML];
     
     // LOAD TITLE TEMPLATE
-    //tmpPath = [[NSBundle mainBundle] pathForResource: @"TITLE" ofType: @"html"];
-    tmpPath = [tempFilePath stringByAppendingString:@"TITLE.html"];
+    tmpPath = [[NSBundle mainBundle] pathForResource: @"TITLE" ofType: @"html"];
+    //tmpPath = [tempFilePath stringByAppendingString:@"TITLE.html"];
     TITLE = [NSString stringWithContentsOfFile: tmpPath encoding:NSUTF8StringEncoding error: &errorForHTML];
-    NSString *tt = [NSString stringWithFormat:@"%@ %@", ([wastBlock.regionId integerValue] == InteriorRegion ? @"Interior":@"Coast"), @"Block Billing and Volume summary (FS702)"];
+    NSString *tt = [NSString stringWithFormat:@"%@ %@", ([wastBlock.regionId integerValue] == InteriorRegion ? @"Interior":@"Coast"), @"Block Billing and Volume summary (FS702) - "];
+    if([wastBlock.ratioSamplingEnabled intValue] == [[NSNumber numberWithBool:TRUE] intValue] && [wastBlock.isAggregate intValue] == [[NSNumber numberWithBool:TRUE] intValue]){
+        tt = [tt stringByAppendingString:[NSString stringWithFormat:@"%@",@" Aggregate Ratio Sampling"]];
+    }else if([wastBlock.ratioSamplingEnabled intValue] == [[NSNumber numberWithBool:FALSE] intValue] && [wastBlock.isAggregate intValue] == [[NSNumber numberWithBool:TRUE] intValue]){
+        tt = [tt stringByAppendingString:[NSString stringWithFormat:@"%@",@" Aggregate SRS Survey"]];
+    }else if([wastBlock.ratioSamplingEnabled intValue] == [[NSNumber numberWithBool:FALSE] intValue] && [wastBlock.isAggregate intValue] == [[NSNumber numberWithBool:FALSE] intValue]){
+        tt = [tt stringByAppendingString:[NSString stringWithFormat:@"%@",@" Single Block SRS Survey"]];
+    }else if([wastBlock.ratioSamplingEnabled intValue] == [[NSNumber numberWithBool:TRUE] intValue] && [wastBlock.isAggregate intValue] == [[NSNumber numberWithBool:FALSE] intValue]){
+        tt = [tt stringByAppendingString:[NSString stringWithFormat:@"%@",@" Single Block Ratio Sampling"]];
+    }
     TITLE = [NSString stringWithFormat:TITLE, tt];
     
     
     // LOAD ROWS TEMPLATE
-    //tmpPath = [[NSBundle mainBundle] pathForResource: @"ROW_2" ofType: @"html"];
-    tmpPath = [tempFilePath stringByAppendingString:@"ROW_2.html"];
+    tmpPath = [[NSBundle mainBundle] pathForResource: @"ROW_2" ofType: @"html"];
+    //tmpPath = [tempFilePath stringByAppendingString:@"ROW_2.html"];
     rowHTML = [NSString stringWithContentsOfFile: tmpPath encoding:NSUTF8StringEncoding error: &errorForHTML];
     
     // LOAD FOOTER TEMPLATE
@@ -122,8 +130,8 @@
     NSString *rowsHTML = [self createRowsForTable1:dataForTable1];
     
     
-    //tmpPath = [[NSBundle mainBundle] pathForResource: @"TABLE2_1" ofType: @"html"];
-    tmpPath = [tempFilePath stringByAppendingString:@"TABLE2_1.html"];
+    tmpPath = [[NSBundle mainBundle] pathForResource: @"TABLE2_1" ofType: @"html"];
+    //tmpPath = [tempFilePath stringByAppendingString:@"TABLE2_1.html"];
 
     T1 = [NSString stringWithContentsOfFile: tmpPath encoding:NSUTF8StringEncoding error: &errorForHTML];
     
@@ -135,9 +143,9 @@
     for (Timbermark *tm in wastBlock.blockTimbermark){
         timberMark = [NSString stringWithFormat:@"%@ %@", timberMark, tm.timbermark];
     }
-        
     
-    T1 = [NSString stringWithFormat:T1, wastBlock.licenceNumber, wastBlock.cuttingPermitId, wastBlock.blockNumber, timberMark, [NSString stringWithString:rowsHTML] ];
+    
+    T1 = [NSString stringWithFormat:T1, wastBlock.licenceNumber, wastBlock.cuttingPermitId, wastBlock.blockNumber, timberMark, timbermark.wmrf, [NSString stringWithString:rowsHTML] ];
     
     //NSLog(@"%@",T1);
     
@@ -153,8 +161,8 @@
     
     NSArray *COLUMNS = [self createColumnsForTable2:dataForTable2 withTotalColumn:totalColumn wasteBlock:wastBlock];
     
-    //tmpPath = [[NSBundle mainBundle] pathForResource: @"TABLE2_2" ofType: @"html"];
-    tmpPath = [tempFilePath stringByAppendingString:@"TABLE2_2.html"];
+    tmpPath = [[NSBundle mainBundle] pathForResource: @"TABLE2_2" ofType: @"html"];
+    //tmpPath = [tempFilePath stringByAppendingString:@"TABLE2_2.html"];
 
     T2 = [NSString stringWithContentsOfFile: tmpPath encoding:NSUTF8StringEncoding error: &errorForHTML];
 
@@ -163,7 +171,8 @@
     
     NSString *customSubTotal = @"";
     NSString *gradeZSubTotal = @"";
-    
+    NSString *notes = @"";
+    //NSString *grade6SubTotal = @"";
     //hard code the sub-total section for coast and interior
     if([wastBlock.regionId integerValue] == CoastRegion){
     
@@ -183,9 +192,15 @@
     NSString *r6 = [COLUMNS objectAtIndex:(COLUMNS.count - 3)];
     
     gradeZSubTotal = [gradeZSubTotal stringByAppendingString:[NSString stringWithFormat:@"<tr class=""boldRows""> <td colspan=""2"" class=""leftAlignment""><b>Z-Grade</b></td>%@</tr>",  [COLUMNS objectAtIndex:(COLUMNS.count - 1)]]];
-    T2 = [NSString stringWithFormat:T2, r1, customSubTotal, r6, r7,gradeZSubTotal];
+    /*below code as part of fix EFORWASTE-85
+    if( [wastBlock.regionId integerValue] == InteriorRegion){
+        gradeZSubTotal = [gradeZSubTotal stringByAppendingString:[NSString stringWithFormat:@"<tr class=""boldRows""> <td colspan=""2"" class=""leftAlignment""><b>Grade-6</b></td>%@</tr>",  [COLUMNS objectAtIndex:(COLUMNS.count - 1)]]];
+    }*/
     
-    
+    if([wastBlock.ratioSamplingEnabled intValue] == [[NSNumber numberWithBool:TRUE] intValue]){
+        notes = [notes stringByAppendingString:[NSString stringWithFormat:@"%@",@" Note: If the survey method uses ratio, the displayed values are NOT adjusted by the ratio for the population."]];
+    }
+    T2 = [NSString stringWithFormat:T2, r1, customSubTotal, r6, r7,gradeZSubTotal, notes];
     
     
     // STICH TOGETHER THE FORM FILE: HMTL = CSS + TITLE + T1 + T2 + FOOTER
@@ -333,7 +348,8 @@
                             
                             float pieceRate = [self pieceRate:piece.pieceScaleSpeciesCode.scaleSpeciesCode withGrade:piece.pieceScaleGradeCode.scaleGradeCode
                                                     withAvoid:[piece.pieceWasteClassCode.wasteClassCode isEqualToString:@"A"] forBlock:wastBlock withTimbermark:timbermark];
-                            
+                            //app crashes when pieceRate is NAN. Inorder to avoid that the below code.
+                            pieceRate = isnan(pieceRate) ? 0.0 : pieceRate;
                             //float volHa = [[piece.pieceVolume decimalNumberByDividingBy:wastBlock.netArea] floatValue];
                             //volume = plot multipler x piece volume x (100/ check measure percent) / number of plot
                             double pieceVolume = 0.0;
@@ -497,6 +513,8 @@
     NSMutableArray *totalAvoidable = [[NSMutableArray alloc]initWithObjects:@"0",@"0",@"0",nil];
     NSMutableArray *totalUnAvoidable = [[NSMutableArray alloc]initWithObjects:@"0",@"0",@"0",nil];
     NSMutableArray *gradeZ = [[NSMutableArray alloc]initWithObjects:@"0",@"0",@"0",nil];
+    /*below code is done as part of fix EFORWASTE-85
+    NSMutableArray *grade6 = [[NSMutableArray alloc]initWithObjects:@"0",@"0",@"0",nil];*/
     
     //testing
     double tt1 = (0.1 / 0.5);
@@ -567,14 +585,15 @@
         //
         
         // total cut control
-        updated1 = [[cutCtrl objectAtIndex:0] floatValue] + [td5 floatValue];
-        updated2 = [[cutCtrl objectAtIndex:1] floatValue] + [td6 floatValue];
-        updated3 = [[cutCtrl objectAtIndex:2] floatValue] + [td7 floatValue];
-        
-        [cutCtrl replaceObjectAtIndex:0 withObject:[[NSString alloc] initWithFormat:@"%.f",updated1]];
-        [cutCtrl replaceObjectAtIndex:1 withObject:[[NSString alloc] initWithFormat:@"%.02f",updated2]];
-        [cutCtrl replaceObjectAtIndex:2 withObject:[[NSString alloc] initWithFormat:@"%.003f",updated3]];
-        
+        if(![td3 isEqualToString:@"Z"] && ![td3 isEqualToString:@"6"]){
+            updated1 = [[cutCtrl objectAtIndex:0] floatValue] + [td5 floatValue];
+            updated2 = [[cutCtrl objectAtIndex:1] floatValue] + [td6 floatValue];
+            updated3 = [[cutCtrl objectAtIndex:2] floatValue] + [td7 floatValue];
+            
+            [cutCtrl replaceObjectAtIndex:0 withObject:[[NSString alloc] initWithFormat:@"%.f",updated1]];
+            [cutCtrl replaceObjectAtIndex:1 withObject:[[NSString alloc] initWithFormat:@"%.02f",updated2]];
+            [cutCtrl replaceObjectAtIndex:2 withObject:[[NSString alloc] initWithFormat:@"%.003f",updated3]];
+        }
         
         // avoidable billable
         if( [td4 isEqualToString:@"Y"] ){
@@ -666,6 +685,7 @@
         }
         
         // total avoidable
+        //&& ![td3 isEqualToString:@"6"] code below NEEDS TO BE ADDED FOR NEXT RELEASE as part of the fix EFORWASTE-85
         if( [td4 isEqualToString:@"Y"] && ![td3 isEqualToString:@"Z"]){
             updated1 = [[totalAvoidable objectAtIndex:0] floatValue] + [td5 floatValue];
             updated2 = [[totalAvoidable objectAtIndex:1] floatValue] + [td6 floatValue];
@@ -677,6 +697,7 @@
         }
         
         // total unavoidable
+        //&& ![td3 isEqualToString:@"6"] code below NEEDS TO BE ADDED FOR NEXT RELEASE as part of the fix EFORWASTE-85
         if( [td4 isEqualToString:@"N"] && ![td3 isEqualToString:@"Z"]){
             updated1 = [[totalUnAvoidable objectAtIndex:0] floatValue] + [td5 floatValue];
             updated2 = [[totalUnAvoidable objectAtIndex:1] floatValue] + [td6 floatValue];
@@ -689,15 +710,25 @@
         
         // grade Z removed from 'All' category and new line entry below 'total unavoidable' titled 'Z-Grade'
         if( [td3 isEqualToString:@"Z"]){
-            updated1 = [[totalGrade5 objectAtIndex:0] floatValue] + [td5 floatValue];
-            updated2 = [[totalGrade5 objectAtIndex:1] floatValue] + [td6 floatValue];
-            updated3 = [[totalGrade5 objectAtIndex:2] floatValue] + [td7 floatValue];
+            updated1 = [[gradeZ objectAtIndex:0] floatValue] + [td5 floatValue];
+            updated2 = [[gradeZ objectAtIndex:1] floatValue] + [td6 floatValue];
+            updated3 = [[gradeZ objectAtIndex:2] floatValue] + [td7 floatValue];
             
             [gradeZ replaceObjectAtIndex:0 withObject:[[NSString alloc] initWithFormat:@"%.f",updated1]];
             [gradeZ replaceObjectAtIndex:1 withObject:[[NSString alloc] initWithFormat:@"%.02f",updated2]];
             [gradeZ replaceObjectAtIndex:2 withObject:[[NSString alloc] initWithFormat:@"%.003f",updated3]];
         
         }
+        /* below code is done as part of fix for EFORWASTE-85
+        if([td3 isEqualToString:@"6"]){
+            updated1 = [[grade6 objectAtIndex:0] floatValue] + [td5 floatValue];
+            updated2 = [[grade6 objectAtIndex:1] floatValue] + [td6 floatValue];
+            updated3 = [[grade6 objectAtIndex:2] floatValue] + [td7 floatValue];
+            
+            [grade6 replaceObjectAtIndex:0 withObject:[[NSString alloc] initWithFormat:@"%.f",updated1]];
+            [grade6 replaceObjectAtIndex:1 withObject:[[NSString alloc] initWithFormat:@"%.02f",updated2]];
+            [grade6 replaceObjectAtIndex:2 withObject:[[NSString alloc] initWithFormat:@"%.003f",updated3]];
+        }*/
         
     }
     
@@ -727,6 +758,7 @@
                   [NSArray arrayWithArray:totalAvoidable],
                   [NSArray arrayWithArray:totalUnAvoidable],
                   [NSArray arrayWithArray:gradeZ],
+                  //[NSArray arrayWithArray:grade6],//code as part of the fix EFORWASTE-85
                   nil];
     }
     
@@ -874,6 +906,10 @@
                     td1 = @"All";
                     td7 = @"N/A";
                     break;
+                case 6:
+                    td1 = @"Z";
+                    td7 = @"N/A";
+                    break;
                 default:
                     break;
             }
@@ -905,7 +941,13 @@
                     break;
                 case 7:
                     td1 = @"Z";
+                    td7 = @"N/A";
                     break;
+                    /*case 8 as part of fix EFORWASTE-85
+                case 8:
+                    td1 = @"6";
+                    td7 = @"N/A";
+                    break;*/
                 default:
                     break;
             }
@@ -969,6 +1011,12 @@
            ([species isEqualToString:@"BA"] && [grade isEqualToString:@"U"])){
             return [timbermark.hembalWMRF floatValue];
         }
+        else if( [grade isEqualToString:@"6"] ){
+            return 0.0;
+        }
+        else if( [grade isEqualToString:@"Z"] ){
+            return 0.0;
+        }
         else if( [grade isEqualToString:@"W"] ||
                 (![grade isEqualToString:@"4"] && ![grade isEqualToString:@"5"] && [wasteBlock.regionId integerValue] == InteriorRegion && ([species isEqualToString:@"AS"]||
                                                                                                                                             [species isEqualToString:@"BI"]||
@@ -986,9 +1034,6 @@
         else if( [grade isEqualToString:@"Y"] || [grade isEqualToString:@"4"] || [grade isEqualToString:@"5"]){
             return [timbermark.yWMRF floatValue];
         }
-        else if( [grade isEqualToString:@"6"] ){
-            return 0.0;
-        }
         else{
             return [timbermark.allSppJWMRF floatValue];
         }
@@ -1003,7 +1048,7 @@
     
     NSNumberFormatter *f = [[NSNumberFormatter alloc] init];
     [f setNumberStyle:NSNumberFormatterDecimalStyle];
-    
+    //added totalGrade6 variable as part of fix EFORWASTE-85
     double totalCC = 0.0, totalAvoid = 0.0, totalHeBaU = 0.0, totalX = 0.0, totalY = 0.0, totalG1 = 0.0, totalG2 = 0.0, totalG4 = 0.0, totalG5 = 0.0,totalUnvoid = 0.0, totalGradeZ = 0.0;
     NSString *td1, *td2, *td3, *td4, *td5, *td6, *td7, *td8, *td9 = [[NSString alloc] init];
     
@@ -1023,8 +1068,10 @@
         
     
         // total cut control
-        totalCC += [[f numberFromString:td9] floatValue];
-        
+        if(![td3 isEqualToString:@"Z"] && ![td3 isEqualToString:@"6"]){
+            totalCC += [[f numberFromString:td9] floatValue];
+        }
+        //&& ![td3 isEqualToString:@"6"] in line NEEDS TO ADDED below was added as part of fix EFORWASTE-85 FOR NEXT RELEASE
         if( [td4 isEqualToString:@"Y"] && ![td3 isEqualToString:@"Z"]){
             // avoidable billable
             totalAvoid += [[f numberFromString:td9] floatValue];
@@ -1073,6 +1120,11 @@
         if([td3 isEqualToString:@"Z"]) {
             totalGradeZ +=[[f numberFromString:td9] floatValue];
         }
+        //below code is part of fix EFORWASTE-85
+        //total for grade 6
+        /*if([td3 isEqualToString:@"6"]) {
+            totalGrade6 +=[[f numberFromString:td9] floatValue];
+        }*/
     }
     
     
@@ -1098,6 +1150,7 @@
                 [NSNumber numberWithDouble:totalAvoid],
                 [NSNumber numberWithDouble:totalUnvoid],
                 [NSNumber numberWithDouble:totalGradeZ],
+                //[NSNumber numberWithDouble:totalGrade6], //code is part of fix EFORWASTE-85
                 nil];
     }
     

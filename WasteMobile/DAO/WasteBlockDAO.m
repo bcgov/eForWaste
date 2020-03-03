@@ -16,6 +16,7 @@
 #import "EFWInteriorStat+CoreDataClass.h"
 #import "Constants.h"
 #import "PlotSampleGenerator.h"
+#import "PlotSelectorLog.h"
 
 @implementation WasteBlockDAO
 
@@ -92,7 +93,33 @@
     
     [request setEntity:entity];
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat: @" reportingUnit = %@ AND cutBlockId = %@ AND licenceNumber = %@ AND cuttingPermitId = %@ ", ru, cutBlockId, license, cutPermit];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat: @" reportingUnit =[c] %@ AND cutBlockId =[c] %@  AND licenceNumber =[c] %@  AND cuttingPermitId =[c] %@  ", ru, cutBlockId, license, cutPermit];
+    
+    [request setPredicate:predicate];
+    
+    // NSError *error = nil;
+    NSArray *result = [context executeFetchRequest:request error:&error];
+    //NSLog(@"Find Cut Block - result.count = %lu", (unsigned long)result.count);
+    WasteBlock *wb = nil;
+    if (result.count > 0) {
+        wb = result[0];
+    }
+    return wb;
+}
++(WasteBlock *) getWasteBlockByRUCheckDuplicate:(NSString *) ru cutBlockId:(NSString *)cutBlockId license:(NSString*)license cutPermit:(NSString*)cutPermit{
+    
+    NSManagedObjectContext *context = [self managedObjectContext];
+    
+    NSError *error = nil;
+    //Don't save before getting a cut block, Save should be done in different place before this method call
+    //[context save:&error];
+    
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"WasteBlock" inManagedObjectContext:context];
+    
+    [request setEntity:entity];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat: @" reportingUnit = %@ AND cutBlockId = %@  AND licenceNumber = %@  AND cuttingPermitId = %@  ", ru, cutBlockId, license, cutPermit];
     
     [request setPredicate:predicate];
     
@@ -124,7 +151,7 @@
     license = license ? [license stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] : @"";
     cutPermit = cutPermit ? [cutPermit stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] : @"";
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat: @" reportingUnit = %@ AND cutBlockId = %@ AND licenceNumber = %@ AND cuttingPermitId = %@ AND wasteAssessmentAreaID != %@ ", ru, cutBlockId, license, cutPermit, wasteAsseID];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat: @" reportingUnit =[c] %@ AND cutBlockId =[c] %@ AND licenceNumber =[c] %@ AND cuttingPermitId =[c] %@ AND wasteAssessmentAreaID != %@ ", ru, cutBlockId, license, cutPermit, wasteAsseID];
     
     [request setPredicate:predicate];
     
@@ -161,7 +188,9 @@
         wasteBlock.blockInteriorStat = [self createEFWInteriorStat];
     }
     wasteBlock.isAggregate = [NSNumber numberWithBool:isAggregate];
-    
+    if([wasteBlock.ratioSamplingEnabled intValue] == [[NSNumber numberWithBool:YES] intValue]){
+        wasteBlock.ratioSamplingLog = @"";
+    }
     [wasteBlock setUserCreated:[NSNumber numberWithBool:YES]];
     
     return wasteBlock;
@@ -217,6 +246,10 @@
     cs.gradeUHBValueHa = [[NSDecimalNumber alloc] initWithInt:0];
     cs.gradeUHBVolume = [[NSDecimalNumber alloc] initWithInt:0];
     cs.gradeUHBVolumeHa = [[NSDecimalNumber alloc] initWithInt:0];
+    cs.gradeUValue = [[NSDecimalNumber alloc] initWithInt:0];
+    cs.gradeUValueHa = [[NSDecimalNumber alloc] initWithInt:0];
+    cs.gradeUVolume = [[NSDecimalNumber alloc] initWithInt:0];
+    cs.gradeUVolumeHa = [[NSDecimalNumber alloc] initWithInt:0];
     cs.gradeXHBValue = [[NSDecimalNumber alloc] initWithInt:0];
     cs.gradeXHBValueHa = [[NSDecimalNumber alloc] initWithInt:0];
     cs.gradeXHBVolume = [[NSDecimalNumber alloc] initWithInt:0];
@@ -296,7 +329,10 @@
     // Step 1 - Remove the piece and plot object
     NSMutableSet *tempPlot = [NSMutableSet setWithSet:targetWasteStratum.stratumPlot];
     for (WastePlot *wpl in targetWasteStratum.stratumPlot) {
-        
+        if([targetWasteStratum.stratumBlock.ratioSamplingEnabled integerValue]== 1){
+            if(targetWasteBlock.ratioSamplingLog != nil){
+                targetWasteBlock.ratioSamplingLog = [targetWasteBlock.ratioSamplingLog stringByAppendingString:[PlotSelectorLog getPlotSelectorLog:wpl stratum:targetWasteStratum actionDec:@"Delete Stratum, Delete Plot"]];}
+        }
         // Remove each plot piece - cast to superclass NSManagedObject so it can be removed
         for(NSManagedObject *wpi in wpl.plotPiece){
             [context deleteObject:wpi];
@@ -326,52 +362,118 @@
     if (primary_wb &&  secondary_wb) {
         
         //comparing Cut Block Fields
-        if(secondary_wb.location && ![[secondary_wb.location stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
-            primary_wb.location = [NSString stringWithString:secondary_wb.location];
+        if(primary_wb.location && secondary_wb.location && ([[primary_wb.location stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:[secondary_wb.location stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]])){
+            primary_wb.location = [NSString stringWithString:[primary_wb.location stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
         }
-        if(secondary_wb.yearLoggedTo && [secondary_wb.yearLoggedTo integerValue] != 0){
-            primary_wb.yearLoggedTo = [NSNumber numberWithInteger:[secondary_wb.yearLoggedTo integerValue]];
+        if(secondary_wb.location && ![[secondary_wb.location stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && [[primary_wb.location stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.location = [NSString stringWithString:[secondary_wb.location stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
         }
-        if(secondary_wb.yearLoggedFrom && [secondary_wb.yearLoggedFrom integerValue] != 0){
-            primary_wb.yearLoggedFrom = [NSNumber numberWithInteger:[secondary_wb.yearLoggedFrom integerValue]];
+        if(primary_wb.location && [[secondary_wb.location stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && ![[primary_wb.location stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.location = [NSString stringWithString:[primary_wb.location stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
         }
-        if(secondary_wb.loggingCompleteDate){
-            primary_wb.loggingCompleteDate = [[NSDate alloc] initWithTimeInterval:0 sinceDate:secondary_wb.loggingCompleteDate] ;
+        
+        if(primary_wb.yearLoggedTo && secondary_wb.yearLoggedTo && [primary_wb.yearLoggedTo integerValue] == [secondary_wb.yearLoggedTo integerValue]){
+            primary_wb.yearLoggedTo =  [NSNumber numberWithInteger:[primary_wb.yearLoggedTo integerValue]];
         }
-        if(secondary_wb.surveyDate){
-            primary_wb.surveyDate = [[NSDate alloc] initWithTimeInterval:0 sinceDate:secondary_wb.surveyDate];
+        
+        if(primary_wb.yearLoggedFrom && secondary_wb.yearLoggedFrom && [primary_wb.yearLoggedFrom integerValue] == [secondary_wb.yearLoggedFrom integerValue]){
+            primary_wb.yearLoggedFrom =  [NSNumber numberWithInteger:[primary_wb.yearLoggedFrom integerValue]];
         }
-        if(secondary_wb.netArea && [secondary_wb.netArea floatValue] != 0){
-            primary_wb.netArea = [[NSDecimalNumber alloc] initWithFloat: [secondary_wb.netArea floatValue]];
+        
+        if(primary_wb.loggingCompleteDate && secondary_wb.loggingCompleteDate && [primary_wb.loggingCompleteDate isEqualToDate:secondary_wb.loggingCompleteDate]){
+            primary_wb.loggingCompleteDate =  [[NSDate alloc] initWithTimeInterval:0 sinceDate:primary_wb.loggingCompleteDate] ;
         }
-        if(secondary_wb.npNFArea && [secondary_wb.npNFArea floatValue] != 0){
+        
+        if(primary_wb.surveyDate && secondary_wb.surveyDate && [primary_wb.surveyDate isEqualToDate:secondary_wb.surveyDate]){
+            primary_wb.surveyDate = [[NSDate alloc] initWithTimeInterval:0 sinceDate:primary_wb.surveyDate];
+        }
+        
+        if(primary_wb.netArea && secondary_wb.netArea && [primary_wb.netArea floatValue] == [secondary_wb.netArea floatValue]){
+            primary_wb.netArea = [[NSDecimalNumber alloc] initWithFloat: [primary_wb.netArea floatValue]];
+        }
+        
+        if(primary_wb.surveyArea && secondary_wb.surveyArea && [primary_wb.surveyArea floatValue] == [secondary_wb.surveyArea floatValue]){
+            primary_wb.surveyArea = [[NSDecimalNumber alloc] initWithFloat: [primary_wb.surveyArea floatValue]];
+        }
+        
+        if(primary_wb.npNFArea && secondary_wb.npNFArea && [primary_wb.npNFArea floatValue] == [secondary_wb.npNFArea floatValue]){
+            primary_wb.npNFArea = [[NSDecimalNumber alloc] initWithFloat: [primary_wb.npNFArea floatValue]];
+        }
+        if((isnan([primary_wb.npNFArea floatValue])) && (!(isnan([secondary_wb.npNFArea floatValue])))){
             primary_wb.npNFArea = [[NSDecimalNumber alloc] initWithFloat: [secondary_wb.npNFArea floatValue]];
         }
+        if((!(isnan([primary_wb.npNFArea floatValue]))) && (isnan([secondary_wb.npNFArea floatValue]))){
+            primary_wb.npNFArea = [[NSDecimalNumber alloc] initWithFloat: [primary_wb.npNFArea floatValue]];
+        }
+        
         if(secondary_wb.blockMaturityCode ){
             primary_wb.blockMaturityCode = secondary_wb.blockMaturityCode;
         }
+        
         if(secondary_wb.blockSiteCode ){
             primary_wb.blockSiteCode = secondary_wb.blockSiteCode;
         }
-        if(secondary_wb.returnNumber && [secondary_wb.returnNumber integerValue] != 0){
-            primary_wb.returnNumber = [NSNumber numberWithInteger:[secondary_wb.returnNumber integerValue]];
+        
+        if(primary_wb.returnNumber && secondary_wb.returnNumber && [primary_wb.returnNumber integerValue] == [secondary_wb.returnNumber integerValue]){
+            primary_wb.returnNumber =  [NSNumber numberWithInteger:[primary_wb.returnNumber integerValue]];
+        }
+        if([primary_wb.returnNumber integerValue] == 0 && [secondary_wb.returnNumber integerValue] != 0){
+            primary_wb.returnNumber =  [NSNumber numberWithInteger:[secondary_wb.returnNumber integerValue]];
+        }
+        if([secondary_wb.returnNumber integerValue] == 0 && [primary_wb.returnNumber integerValue] != 0){
+            primary_wb.returnNumber = [NSNumber numberWithInteger:[primary_wb.returnNumber integerValue]];
         }
 
-        if(secondary_wb.surveyorLicence && ![[secondary_wb.surveyorLicence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
-            primary_wb.surveyorLicence = [NSString stringWithString:secondary_wb.surveyorLicence];
+        if(primary_wb.surveyorLicence && secondary_wb.surveyorLicence && ([[primary_wb.surveyorLicence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:[secondary_wb.surveyorLicence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]])){
+            primary_wb.surveyorLicence = [NSString stringWithString:[primary_wb.surveyorLicence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
         }
-        if(secondary_wb.surveyorName && ![[secondary_wb.surveyorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
-            primary_wb.surveyorName = [NSString stringWithString:secondary_wb.surveyorName];
+        if(secondary_wb.surveyorLicence && ![[secondary_wb.surveyorLicence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && [[primary_wb.surveyorLicence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.surveyorLicence = [NSString stringWithString:[secondary_wb.surveyorLicence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
         }
-        if(secondary_wb.professional && ![[secondary_wb.professional stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
-            primary_wb.professional = [NSString stringWithString:secondary_wb.professional];
+        if(primary_wb.surveyorLicence && [[secondary_wb.surveyorLicence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && ![[primary_wb.surveyorLicence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.surveyorLicence = [NSString stringWithString:[primary_wb.surveyorLicence stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
         }
-        if(secondary_wb.registrationNumber && ![[secondary_wb.registrationNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
-            primary_wb.registrationNumber = [NSString stringWithString:secondary_wb.registrationNumber];
+        
+        if(primary_wb.surveyorName && secondary_wb.surveyorName && ([[primary_wb.surveyorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:[secondary_wb.surveyorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]] )){
+            primary_wb.surveyorName = [NSString stringWithString:[primary_wb.surveyorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
         }
-        if(secondary_wb.position && ![[secondary_wb.position stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
-            primary_wb.position = [NSString stringWithString:secondary_wb.position];
+        if(secondary_wb.surveyorName && ![[secondary_wb.surveyorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && [[primary_wb.surveyorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.surveyorName = [NSString stringWithString:[secondary_wb.surveyorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
         }
+        if(primary_wb.surveyorName && [[secondary_wb.surveyorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && ![[primary_wb.surveyorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.surveyorName = [NSString stringWithString:[primary_wb.surveyorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+        
+        if(primary_wb.professional && secondary_wb.professional && ([[primary_wb.professional stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:[secondary_wb.professional stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]])){
+            primary_wb.professional = [NSString stringWithString:[primary_wb.professional stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+        if(secondary_wb.professional && ![[secondary_wb.professional stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && [[primary_wb.professional stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.professional = [NSString stringWithString:[secondary_wb.professional stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+        if(primary_wb.professional && [[secondary_wb.professional stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && ![[primary_wb.professional stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.professional = [NSString stringWithString:[primary_wb.professional stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+        
+        if(primary_wb.registrationNumber && secondary_wb.registrationNumber && ([[primary_wb.registrationNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:[secondary_wb.registrationNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]] )){
+            primary_wb.registrationNumber = [NSString stringWithString:[primary_wb.registrationNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+        if(secondary_wb.registrationNumber && ![[secondary_wb.registrationNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && [[primary_wb.registrationNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.registrationNumber = [NSString stringWithString:[secondary_wb.registrationNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+        if(primary_wb.registrationNumber && [[secondary_wb.registrationNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && ![[primary_wb.registrationNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.registrationNumber = [NSString stringWithString:[primary_wb.registrationNumber stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+        
+        if(primary_wb.position && secondary_wb.position && ([[primary_wb.position stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:[secondary_wb.position stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]])){
+            primary_wb.position = [NSString stringWithString:[primary_wb.position stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+        if(secondary_wb.position && ![[secondary_wb.position stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && [[primary_wb.position stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.position = [NSString stringWithString:[secondary_wb.position stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+        if(primary_wb.position && [[secondary_wb.position stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""] && ![[primary_wb.position stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+            primary_wb.position = [NSString stringWithString:[primary_wb.position stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+        }
+        
         //append the note field after another
         if(!primary_wb.notes){
             primary_wb.notes = @"";
@@ -397,19 +499,73 @@
         //NSLog(@"swb-timbermark: %@", [[secondary_wb.blockTimbermark allObjects] objectAtIndex:0].timbermark);
         for (Timbermark *tm_swb in secondary_wb.blockTimbermark){
             if(tm_swb && tm_swb.primaryInd){
-                Timbermark *ttm = [tm_swb.primaryInd integerValue] == 1 ? ptm : stm;
-
-                if(tm_swb.timbermark && [[tm_swb.timbermark stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
-                    ttm.timbermark = [NSString stringWithString:tm_swb.timbermark];
+                if([tm_swb.primaryInd integerValue] == 1){
+                Timbermark *ttm = ptm ;
+                
+                    if(tm_swb.timbermark && [[tm_swb.timbermark stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+                        ttm.timbermark = [NSString stringWithString:[tm_swb.timbermark stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+                    }
+                    /*if(tm_swb.coniferWMRF && [tm_swb.coniferWMRF floatValue] != 0){
+                        ttm.coniferWMRF = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.coniferWMRF floatValue]];
+                    }*/
+                    if(ttm.coniferWMRF && tm_swb.coniferWMRF && [ttm.coniferWMRF floatValue] == [tm_swb.coniferWMRF floatValue]){
+                        ttm.coniferWMRF = [[NSDecimalNumber alloc] initWithFloat:[ttm.coniferWMRF floatValue]];
+                    }
+                    if([ttm.coniferWMRF floatValue] == 0 && [tm_swb.coniferWMRF floatValue] != 0){
+                        ttm.coniferWMRF = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.coniferWMRF floatValue]];
+                    }
+                    if([tm_swb.coniferWMRF floatValue] == 0 && [ttm.coniferWMRF integerValue] != 0){
+                        ttm.coniferWMRF = [[NSDecimalNumber alloc] initWithFloat:[ttm.coniferWMRF floatValue]];
+                    }
+                    /*if(tm_swb.deciduousPrice && [tm_swb.deciduousPrice floatValue] != 0){
+                        ttm.deciduousPrice = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.deciduousPrice floatValue]];
+                    }*/
+                    if(ttm.deciduousPrice && tm_swb.deciduousPrice && [ttm.deciduousPrice floatValue] == [tm_swb.deciduousPrice floatValue]){
+                        ttm.deciduousPrice = [[NSDecimalNumber alloc] initWithFloat:[ttm.deciduousPrice floatValue]];
+                    }
+                    if([ttm.deciduousPrice floatValue] == 0 && [tm_swb.deciduousPrice floatValue] != 0){
+                        ttm.deciduousPrice = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.deciduousPrice floatValue]];
+                    }
+                    if([tm_swb.deciduousPrice floatValue] == 0 && [ttm.deciduousPrice integerValue] != 0){
+                        ttm.deciduousPrice = [[NSDecimalNumber alloc] initWithFloat:[ttm.deciduousPrice floatValue]];
+                    }
+                    if(tm_swb.area && [tm_swb.area floatValue] != 0){
+                        ttm.area = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.area floatValue]];
+                    }
+                    [primary_wb addBlockTimbermarkObject:ttm];
                 }
-                if(tm_swb.coniferWMRF && [tm_swb.coniferWMRF floatValue] != 0){
-                    ttm.coniferWMRF = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.coniferWMRF floatValue]];
-                }
-                if(tm_swb.deciduousPrice && [tm_swb.deciduousPrice floatValue] != 0){
-                    ttm.deciduousPrice = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.deciduousPrice floatValue]];
-                }
-                if(tm_swb.area && [tm_swb.area floatValue] != 0){
-                    ttm.area = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.area floatValue]];
+                if([tm_swb.primaryInd integerValue] == 2){
+                    Timbermark *ttm = nil;
+                    if(stm == nil) {
+                        ttm = tm_swb ;
+                    }else{
+                        ttm = stm ;
+                    }
+                    if(tm_swb.timbermark && [[tm_swb.timbermark stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] isEqualToString:@""]){
+                        ttm.timbermark = [NSString stringWithString:[tm_swb.timbermark stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+                    }
+                    if(ttm.coniferWMRF && tm_swb.coniferWMRF && [ttm.coniferWMRF floatValue] == [tm_swb.coniferWMRF floatValue]){
+                        ttm.coniferWMRF = [[NSDecimalNumber alloc] initWithFloat:[ttm.coniferWMRF floatValue]];
+                    }
+                    if([ttm.coniferWMRF floatValue] == 0 && [tm_swb.coniferWMRF floatValue] != 0){
+                        ttm.coniferWMRF = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.coniferWMRF floatValue]];
+                    }
+                    if([tm_swb.coniferWMRF floatValue] == 0 && [ttm.coniferWMRF integerValue] != 0){
+                        ttm.coniferWMRF = [[NSDecimalNumber alloc] initWithFloat:[ttm.coniferWMRF floatValue]];
+                    }
+                    if(ttm.deciduousPrice && tm_swb.deciduousPrice && [ttm.deciduousPrice floatValue] == [tm_swb.deciduousPrice floatValue]){
+                        ttm.deciduousPrice = [[NSDecimalNumber alloc] initWithFloat:[ttm.deciduousPrice floatValue]];
+                    }
+                    if([ttm.deciduousPrice floatValue] == 0 && [tm_swb.deciduousPrice floatValue] != 0){
+                        ttm.deciduousPrice = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.deciduousPrice floatValue]];
+                    }
+                    if([tm_swb.deciduousPrice floatValue] == 0 && [ttm.deciduousPrice integerValue] != 0){
+                        ttm.deciduousPrice = [[NSDecimalNumber alloc] initWithFloat:[ttm.deciduousPrice floatValue]];
+                    }
+                    if(tm_swb.area && [tm_swb.area floatValue] != 0){
+                        ttm.area = [[NSDecimalNumber alloc] initWithFloat:[tm_swb.area floatValue]];
+                    }
+                    [primary_wb addBlockTimbermarkObject:ttm];
                 }
             }
         }
@@ -517,7 +673,7 @@
     }
     
     //If wasteblock in managed context (DB) isn't the same as the one created when "New Block" nav button is pressed, it is an invalid duplicate
-    WasteBlock *found = [WasteBlockDAO getWasteBlockByRU:ru cutBlockId:cutBlockId license:license cutPermit:cutPermit];
+    WasteBlock *found = [WasteBlockDAO getWasteBlockByRUCheckDuplicate:ru cutBlockId:cutBlockId license:license cutPermit:cutPermit];
     if (found && [[found wasteAssessmentAreaID] intValue] != [assessmentAreaId intValue]){
         return YES;
     } else {

@@ -104,6 +104,7 @@
 @property (weak, nonatomic) IBOutlet UITextField *telephoneNumber;
 
 @property (strong, nonatomic) IBOutlet UIButton *addStratumButton;
+@property (weak, nonatomic) IBOutlet UITextField *benchmarkField;
 
 
 // Footer Bar Buttons

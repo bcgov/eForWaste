@@ -375,7 +375,7 @@
 
 -(void)popupForPieceSearch{
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Search Piece by Piece Number"
-                                                                   message:@"Please enter the piece number greater zero."
+                                                                   message:@"Please enter the piece number."
                                                             preferredStyle:UIAlertControllerStyleAlert];
     [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
         textField.placeholder        = NSLocalizedString(@"Piece Number", nil);
@@ -559,6 +559,8 @@
             [self showAlert:@"Import File" message:@"Fail to import file - xml error." ];
         }else if (outcome == ImportFailOnSaveWastBlock){
             [self showAlert:@"Import File" message:@"Fail to import file - save error." ];
+        }else if (outcome == ImportFailRegionIDExist){
+            [self showAlert:@"Import File" message:@"Fail to import file - region different." ];
         }
     }
 }
@@ -607,6 +609,7 @@
     switch(import_outcome){
         case ImportFailLoadXML:
         case ImportFailOnSaveWastBlock:
+        case ImportFailRegionIDExist:
             import_wb = nil;
             break;
     default:

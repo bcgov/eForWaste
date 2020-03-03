@@ -13,7 +13,7 @@
 
 @implementation PlotSelectorLog
 
-+(NSString *) getPlotSelectorLog:(WastePlot*)wp actionDec:(NSString*)actionDec{
++(NSString *) getPlotSelectorLog:(WastePlot*)wp stratum:(WasteStratum*)ws actionDec:(NSString*)actionDec{
     /*
      Column description
      
@@ -34,16 +34,16 @@
      */
     
     NSString *uniqueIdentifier = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-    NSString *surveyor = [NSString stringWithString:wp.plotStratum.stratumBlock.surveyorName];
-    NSString *ru = [NSString stringWithFormat:@"%@", wp.plotStratum.stratumBlock.reportingUnit];
-    NSString *block = [NSString stringWithString:wp.plotStratum.stratumBlock.cutBlockId];
-    NSString *license = [NSString stringWithString:wp.plotStratum.stratumBlock.licenceNumber];
-    NSString *cp = [NSString stringWithString:wp.plotStratum.stratumBlock.cuttingPermitId];
-    NSString *stratum = [NSString stringWithString:wp.plotStratum.stratum];
-    NSString *plot_num = [wp.plotNumber stringValue];
+    NSString *surveyor = wp.plotStratum.stratumBlock.surveyorName ? [NSString stringWithString:wp.plotStratum.stratumBlock.surveyorName] : @"";
+    NSString *ru = wp.plotStratum.stratumBlock.reportingUnit ? [NSString stringWithFormat:@"%@", wp.plotStratum.stratumBlock.reportingUnit] : @"";
+    NSString *block = wp.plotStratum.stratumBlock.cutBlockId ? [NSString stringWithString:wp.plotStratum.stratumBlock.cutBlockId] : @"";
+    NSString *license = wp.plotStratum.stratumBlock.licenceNumber ? [NSString stringWithString:wp.plotStratum.stratumBlock.licenceNumber] : @"";
+    NSString *cp = wp.plotStratum.stratumBlock.cuttingPermitId ? [NSString stringWithString:wp.plotStratum.stratumBlock.cuttingPermitId] : @"";
+    NSString *stratum = wp.plotStratum.stratum ? [NSString stringWithString:wp.plotStratum.stratum] : @"";
+    NSString *plot_num = wp.plotNumber? [wp.plotNumber stringValue] : @"";
     NSString *selected = [wp.isMeasurePlot integerValue] == 1 ? @"YES":@"NO";
-    NSString *gv = [NSString stringWithFormat:@"%.2f", [wp.greenVolume floatValue]];
-    NSString *dv = [NSString stringWithFormat:@"%.2f", [wp.dryVolume floatValue]];
+    NSString *gv = [wp.greenVolume floatValue] ? [NSString stringWithFormat:@"%.2f", [wp.greenVolume floatValue]] : @"";
+    NSString *dv = [wp.dryVolume floatValue] ? [NSString stringWithFormat:@"%.2f", [wp.dryVolume floatValue]] : @"";
     
     
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];

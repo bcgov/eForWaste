@@ -15,6 +15,6 @@
 
 @property (nonatomic, strong) CLLocationManager *locationManager;
 
-+(NSString *) getPlotSelectorLog:(WastePlot*)wp  actionDec:(NSString*)actionDec;
++(NSString *) getPlotSelectorLog:(WastePlot*)wp stratum:(WasteStratum*)ws actionDec:(NSString*)actionDec;
 
 @end

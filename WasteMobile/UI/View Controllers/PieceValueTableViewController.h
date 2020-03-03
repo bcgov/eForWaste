@@ -17,6 +17,7 @@ typedef enum {
     LookupMode,
     NumberMode,
     DecimalNumberMode,
+    DecimalNumberMode2,
     TextMode,
     TextMode2
 }DisplayMode;

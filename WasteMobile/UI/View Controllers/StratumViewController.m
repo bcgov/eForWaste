@@ -447,7 +447,12 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
             self.wasteStratum.orgMeasurePlot = [[NSNumber alloc] initWithInt:[self.measurePlot.text intValue]];
         }
     }
-    
+        double  totalestimatedvolume = 0.0;
+        for(WastePlot *wp in [self.wasteStratum.stratumPlot allObjects]){
+            totalestimatedvolume = totalestimatedvolume + [wp.plotEstimatedVolume doubleValue];
+        }
+        self.wasteStratum.totalEstimatedVolume = [[NSDecimalNumber alloc] initWithDouble:totalestimatedvolume];
+        NSLog(@"Total Estimated Volume %@", self.wasteStratum.totalEstimatedVolume);
     //determine strutam type
     if(self.wasteStratum.stratumWasteTypeCode && (!self.wasteStratum.stratumStratumTypeCode || ![self.wasteStratum.stratumStratumTypeCode.stratumTypeCode isEqualToString:@"S"])){
         if([self.wasteStratum.stratumWasteTypeCode.wasteTypeCode isEqualToString:@"D"] || [self.wasteStratum.stratumWasteTypeCode.wasteTypeCode isEqualToString:@"F"] ||
@@ -553,7 +558,7 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
             NSString* def_mp =[self getDefaultMeasurePlot:self.wasteStratum.stratumWasteTypeCode.wasteTypeCode];
             NSString* def_pp =[self getDefaultPredictionPlot:self.wasteStratum.stratumWasteTypeCode.wasteTypeCode];
             // check if the user enter value against the default value - don't check for aggregates
-            if(( ![def_mp isEqualToString:@""] && ![self.measurePlot.text isEqualToString:def_mp]) || (![def_pp isEqualToString:@""] && ![self.predictionPlot.text isEqualToString:def_pp])){
+            /*if(( ![def_mp isEqualToString:@""] && ![self.measurePlot.text isEqualToString:def_mp]) || (![def_pp isEqualToString:@""] && ![self.predictionPlot.text isEqualToString:def_pp])){
                 isValid = NO;
                 UIAlertController* confirmAlert = [UIAlertController alertControllerWithTitle:@"Non-standard Value"
                                                                                       message:@"Prediction Plot and/or Measure Plot are non-standard values, Accept?"
@@ -568,15 +573,15 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
                 [confirmAlert addAction:yesAction];
                 [confirmAlert addAction:noAction];
                 [self presentViewController:confirmAlert animated:YES completion:nil];
-            }else{
+            }else{*/
 
                 [PlotSampleGenerator generatePlotSample2:self.wasteStratum];
                 //lock down the prediction plot and measure plot fields
-                [self.predictionPlot setEnabled:NO];
+                /*[self.predictionPlot setEnabled:NO];
                 [self.predictionPlot setBackgroundColor:[UIColor disabledTextFieldBackgroundColor]];
                 [self.measurePlot setEnabled:NO];
-                [self.measurePlot setBackgroundColor:[UIColor disabledTextFieldBackgroundColor]];
-            }
+                [self.measurePlot setBackgroundColor:[UIColor disabledTextFieldBackgroundColor]];*/
+            //}
         }
     }
 
@@ -586,49 +591,86 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
 }
 
 -(void)promptForGreenDryVolume{
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Ratio Sampling Stratum"
-                                                                   message:@"Please enter your estimate for:\n- Green Volume\n- Dry Volume"
-                                                            preferredStyle:UIAlertControllerStyleAlert];
-    
-    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-        textField.placeholder        = NSLocalizedString(@"Plot Number", nil);
-        textField.accessibilityLabel = NSLocalizedString(@"Plot Number", nil);
-        textField.clearButtonMode    = UITextFieldViewModeAlways;
-        textField.keyboardType       = UIKeyboardTypeNumberPad;
-        textField.tag                = 3;
-        textField.delegate           = self;
-    }];
+    if([wasteBlock.regionId integerValue] == InteriorRegion){
+        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Ratio Sampling Stratum"
+                                                                       message:@"Please enter your estimate for:\n- Green Volume (m3)\n- Dry Volume (m3)"
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        
+        [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+            textField.placeholder        = NSLocalizedString(@"Plot Number", nil);
+            textField.accessibilityLabel = NSLocalizedString(@"Plot Number", nil);
+            textField.clearButtonMode    = UITextFieldViewModeAlways;
+            textField.keyboardType       = UIKeyboardTypeNumberPad;
+            textField.tag                = 3;
+            textField.delegate           = self;
+        }];
 
-    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-        textField.placeholder        = NSLocalizedString(@"Green Volume", nil);
-        textField.accessibilityLabel = NSLocalizedString(@"Green Volume", nil);
-        textField.clearButtonMode    = UITextFieldViewModeAlways;
-        textField.keyboardType       = UIKeyboardTypeNumberPad;
-        textField.tag                = 3;
-        textField.delegate           = self;
-    }];
-    
-    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-        textField.placeholder        = NSLocalizedString(@"Dry Volume", nil);
-        textField.accessibilityLabel = NSLocalizedString(@"Dry Volume", nil);
-        textField.clearButtonMode    = UITextFieldViewModeAlways;
-        textField.keyboardType       = UIKeyboardTypeNumberPad;
-        textField.tag                = 3;
-        textField.delegate           = self;
-    }];
-    
-    UIAlertAction* okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
-                                                          handler:^(UIAlertAction * action) {
-                                                              [self promptForConfirmVolume:alert];
-                                                          }];
-    UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault
-                                                          handler:^(UIAlertAction * action) {
-                                                          }];
-    
-    
-    [alert addAction:okAction];
-    [alert addAction:cancelAction];
-    [self presentViewController:alert animated:YES completion:nil];
+        [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+            textField.placeholder        = NSLocalizedString(@"Green Volume (m3)", nil);
+            textField.accessibilityLabel = NSLocalizedString(@"Green Volume", nil);
+            textField.clearButtonMode    = UITextFieldViewModeAlways;
+            textField.keyboardType       = UIKeyboardTypeNumberPad;
+            textField.tag                = 3;
+            textField.delegate           = self;
+        }];
+        
+        [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+            textField.placeholder        = NSLocalizedString(@"Dry Volume (m3)", nil);
+            textField.accessibilityLabel = NSLocalizedString(@"Dry Volume", nil);
+            textField.clearButtonMode    = UITextFieldViewModeAlways;
+            textField.keyboardType       = UIKeyboardTypeNumberPad;
+            textField.tag                = 3;
+            textField.delegate           = self;
+        }];
+        
+        UIAlertAction* okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction * action) {
+                                                                  [self promptForConfirmVolume:alert];
+                                                              }];
+        UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction * action) {
+                                                              }];
+        
+        
+        [alert addAction:okAction];
+        [alert addAction:cancelAction];
+        [self presentViewController:alert animated:YES completion:nil];
+    } else if([wasteBlock.regionId integerValue] == CoastRegion){
+        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Ratio Sampling Stratum"
+                                                                       message:@"Please enter your estimate for:\n- Predicted Plot Volume (m3)"
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        
+        [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+            textField.placeholder        = NSLocalizedString(@"Plot Number", nil);
+            textField.accessibilityLabel = NSLocalizedString(@"Plot Number", nil);
+            textField.clearButtonMode    = UITextFieldViewModeAlways;
+            textField.keyboardType       = UIKeyboardTypeNumberPad;
+            textField.tag                = 3;
+            textField.delegate           = self;
+        }];
+        
+        [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+            textField.placeholder        = NSLocalizedString(@"Predicted Plot Volume (m3)", nil);
+            textField.accessibilityLabel = NSLocalizedString(@"Predicted Plot Volume (m3)", nil);
+            textField.clearButtonMode    = UITextFieldViewModeAlways;
+            textField.keyboardType       = UIKeyboardTypeNumberPad;
+            textField.tag                = 3;
+            textField.delegate           = self;
+        }];
+        
+        UIAlertAction* okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+                                                         handler:^(UIAlertAction * action) {
+                                                             [self promptForConfirmVolume:alert];
+                                                         }];
+        UIAlertAction* cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction * action) {
+                                                             }];
+        
+        
+        [alert addAction:okAction];
+        [alert addAction:cancelAction];
+        [self presentViewController:alert animated:YES completion:nil];
+    }
 }
 
 // TABLE VIEW POPULATION
@@ -740,7 +782,7 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
             cell.measure.text = pt.surveyedMeasurePercent ? [NSString stringWithFormat:@"%@", pt.surveyedMeasurePercent] : @"";
             cell.shape.text = pt.plotShapeCode ? [NSString stringWithFormat:@"%@", pt.plotShapeCode.shapeCode] : @"";
             
-            if ([pt.plotID integerValue] == 0 && [self.wasteStratum.stratumAssessmentMethodCode.assessmentMethodCode isEqualToString:@"P"]){
+            if ([pt.plotID integerValue] == 0 ){
                 // store the row number into the tag
                 cell.deleteButton.tag = indexPath.row;
             }else{
@@ -796,7 +838,7 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
             cell.blockId.text = pt.aggregateCutblock ? [NSString stringWithFormat:@"%@", pt.aggregateCutblock] : @"";
             cell.cuttingPermit.text = pt.aggregateCuttingPermit ? [NSString stringWithFormat:@"%@", pt.aggregateCuttingPermit] : @"";
             
-            if ([pt.plotID integerValue] == 0 && [self.wasteStratum.stratumAssessmentMethodCode.assessmentMethodCode isEqualToString:@"P"]){
+            if ([pt.plotID integerValue] == 0 ){
                 // store the row number into the tag
                 cell.deleteButton.tag = indexPath.row;
             }else{
@@ -1025,7 +1067,7 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
     NSString *theString = str;
     // FLOAT VALUE ONLY
     if(textField==self.areaHa ||[textField.accessibilityLabel isEqualToString:NSLocalizedString(@"Green Volume", nil)]
-       || [textField.accessibilityLabel isEqualToString:NSLocalizedString(@"Dry Volume", nil)] )
+       || [textField.accessibilityLabel isEqualToString:NSLocalizedString(@"Dry Volume", nil)] || [textField.accessibilityLabel isEqualToString:NSLocalizedString(@"Predicted Plot Volume (m3)", nil)] )
     {
         if( ![self validInputNumbersOnlyWithDot:theString] ){
             return NO;
@@ -1094,7 +1136,7 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
         }else{
             [self.footerStatView setViewValue:self.wasteStratum];
         }
-    }else if(textField == self.wasteType){
+    }/*else if(textField == self.wasteType){
         if([self.wasteBlock.isAggregate intValue] == [[NSNumber numberWithBool:FALSE] intValue])
         {
             if(![textField.text isEqualToString:@""] && [wasteBlock.ratioSamplingEnabled intValue] == 1 && (!wasteStratum.n1sample || [wasteStratum.n1sample isEqualToString:@""])){
@@ -1115,7 +1157,7 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
             }
         }
         [self saveData];
-    }
+    }*/
 }
 
 #pragma mark - UITextView
@@ -1257,7 +1299,7 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
             [[self.assessmentSizeArray[row] valueForKey:@"PlotSizeCode"] isEqualToString:@"O"] ) ){
             
             if(wasteStratum.stratumPlot && [wasteStratum.stratumPlot count] > 0){
-                UIAlertController *userAlert = [UIAlertController alertControllerWithTitle:@"Warning" message:@"By changing the assessment method code, all existing plot data in this stratum will be removed. proceed?" preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertController *userAlert = [UIAlertController alertControllerWithTitle:@"Warning" message:@"By changing the assessment method code, all existing plot data in this stratum will be removed. Proceed?" preferredStyle:UIAlertControllerStyleAlert];
                 UIAlertAction *noBtn = [UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action){
                     self.assesmentSize.text = self.wasteStratum.stratumPlotSizeCode.plotSizeCode ? [[NSString alloc] initWithFormat:@"%@ - %@", self.wasteStratum.stratumPlotSizeCode.plotSizeCode, self.wasteStratum.stratumPlotSizeCode.desc] : @"";
                     // update assessment picker selected row
@@ -1349,6 +1391,11 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
     // disable the add plot link
     [self.addPlotButton setHidden:YES];
     [self.addRatioPlotButton setHidden:YES];
+    
+    if([self.wasteStratum.stratumPlotSizeCode.plotSizeCode isEqualToString:@"S"] ||
+    [self.wasteStratum.stratumPlotSizeCode.plotSizeCode isEqualToString:@"E"]){
+        [self.addPlotButton setHidden:NO];
+    }
     
     // refresh sorted plot list
     NSSortDescriptor *sort = [[NSSortDescriptor alloc ] initWithKey:@"plotNumber" ascending:YES];
@@ -1674,7 +1721,14 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
         self.surveyAreaLabel.text = [NSString stringWithFormat:@"Survey Area: %.2f ha", [self.wasteStratum.stratumSurveyArea floatValue]];
         self.areaHa.text = self.wasteStratum.stratumArea && [self.wasteStratum.stratumArea floatValue] > 0 ? [[NSString alloc] initWithFormat:@"%.2f", [self.wasteStratum.stratumArea floatValue]] : @"";
     }
-    
+    for(WasteStratum *ws in [self.wasteBlock.blockStratum allObjects]){
+        double  totalestimatedvolume = 0.0;
+        for(WastePlot *wp in [ws.stratumPlot allObjects]){
+            totalestimatedvolume = totalestimatedvolume + [wp.plotEstimatedVolume doubleValue];
+        }
+        ws.totalEstimatedVolume = [[NSDecimalNumber alloc] initWithDouble:totalestimatedvolume];
+        NSLog(@"Total Estimated Volume %@", ws.totalEstimatedVolume);
+    }
 
     
     //show the down allow image if more than 5 plots
@@ -1715,6 +1769,10 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
     [self.addPlotButton setHidden:YES];
     [self.addRatioPlotButton setHidden:YES];
     
+    if([self.wasteStratum.stratumPlotSizeCode.plotSizeCode isEqualToString:@"S"] ||
+       [self.wasteStratum.stratumPlotSizeCode.plotSizeCode isEqualToString:@"E"]){
+        [self.addPlotButton setHidden:NO];
+    }
     if([self.wasteStratum.stratumAssessmentMethodCode.assessmentMethodCode isEqualToString:@"P"]){
         if ([self.wasteBlock.ratioSamplingEnabled integerValue] ==1){
             [self.addRatioPlotButton setHidden:NO];
@@ -1851,73 +1909,138 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
     NSString* gv_str = @"";
     NSString* dv_str = @"";
     NSString* pn_str = @"";
-
-    for(UITextField* tf in alert.textFields){
-        if([tf.accessibilityLabel isEqualToString:NSLocalizedString(@"Green Volume", nil)]){
-            gv = [[NSDecimalNumber alloc] initWithString:tf.text];
-            gv_str =tf.text;
-        }
-        if([tf.accessibilityLabel isEqualToString:NSLocalizedString(@"Dry Volume", nil)]){
-            dv = [[NSDecimalNumber alloc] initWithString:tf.text];
-            dv_str = tf.text;
-        }
-        if([tf.accessibilityLabel isEqualToString:NSLocalizedString(@"Plot Number", nil)]){
-            pn = [[NSDecimalNumber alloc] initWithString:tf.text];
-            pn_str = tf.text;
-        }
-    }
-    BOOL duplicatePlot = NO;
-    if (pn){
-        for(WastePlot* wp in wasteStratum.stratumPlot){
-            if( [wp.plotNumber integerValue] == [pn integerValue]){
-                duplicatePlot = YES;
-                break;
+    if([wasteBlock.regionId integerValue] == InteriorRegion){
+        for(UITextField* tf in alert.textFields){
+            if([tf.accessibilityLabel isEqualToString:NSLocalizedString(@"Green Volume", nil)]){
+                gv = [[NSDecimalNumber alloc] initWithString:tf.text];
+                gv_str =tf.text;
+            }
+            if([tf.accessibilityLabel isEqualToString:NSLocalizedString(@"Dry Volume", nil)]){
+                dv = [[NSDecimalNumber alloc] initWithString:tf.text];
+                dv_str = tf.text;
+            }
+            if([tf.accessibilityLabel isEqualToString:NSLocalizedString(@"Plot Number", nil)]){
+                pn = [[NSDecimalNumber alloc] initWithString:tf.text];
+                pn_str = tf.text;
             }
         }
-    }
-    
-    if([pn_str isEqualToString:@""] || [gv_str isEqualToString:@""] || [dv_str isEqualToString:@""]){
-        UIAlertController* warningAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Missing Required Field", nil)
-                                                                              message:@"Please enter Plot Number, Green Volume and Dry Volume."
-                                                                       preferredStyle:UIAlertControllerStyleAlert];
+        BOOL duplicatePlot = NO;
+        if (pn){
+            for(WastePlot* wp in wasteStratum.stratumPlot){
+                if( [wp.plotNumber integerValue] == [pn integerValue]){
+                    duplicatePlot = YES;
+                    break;
+                }
+            }
+        }
         
-        UIAlertAction* okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault
-                                                          handler:^(UIAlertAction * action) {
-                                                              [self presentViewController:alert animated:YES completion:nil];
-                                                          }];
+        if([pn_str isEqualToString:@""] || [gv_str isEqualToString:@""] || [dv_str isEqualToString:@""]){
+            UIAlertController* warningAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Missing Required Field", nil)
+                                                                                  message:@"Please enter Plot Number, Green Volume and Dry Volume."
+                                                                           preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction* okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction * action) {
+                                                                  [self presentViewController:alert animated:YES completion:nil];
+                                                              }];
+            
+            [warningAlert addAction:okAction];
+            [self presentViewController:warningAlert animated:YES completion:nil];
+        }else if(duplicatePlot){
+            UIAlertController* warningAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Duplicate Plot Number", nil)
+                                                                                  message:@"Duplicate plot number, Select new plot number before proceeding."
+                                                                           preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction* okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction * action) {
+                                                                 [self presentViewController:alert animated:YES completion:nil];
+                                                             }];
+            
+            [warningAlert addAction:okAction];
+            [self presentViewController:warningAlert animated:YES completion:nil];
+        }
+        else{
+            UIAlertController* confirmAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Confirm Estimation", nil)
+                                                                                  message:[NSString stringWithFormat:@"Accept volume estimates? \n Plot Number %d \n Green Volume (m3)= %.2f \n Dry Volume (m3)= %.2f",[pn intValue], [gv floatValue], [dv floatValue]]
+                                                                           preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction* yesAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"YES", nil) style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction * action) {
+                                                                  [self addRatioPlotAndNavigate:gv dryVolume:dv plotNumber:pn];
+                                                              }];
+            
+            UIAlertAction* noAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"NO", nil) style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction * action) {
+                                                                 [self presentViewController:alert animated:YES completion:nil];
+                                                             }];
+            [confirmAlert addAction:yesAction];
+            [confirmAlert addAction:noAction];
+            [self presentViewController:confirmAlert animated:YES completion:nil];
+        }
+    } else if([wasteBlock.regionId integerValue] == CoastRegion){
+        for(UITextField* tf in alert.textFields){
+            if([tf.accessibilityLabel isEqualToString:NSLocalizedString(@"Predicted Plot Volume (m3)", nil)]){
+                gv = [[NSDecimalNumber alloc] initWithString:tf.text];
+                gv_str =tf.text;
+            }
+            if([tf.accessibilityLabel isEqualToString:NSLocalizedString(@"Plot Number", nil)]){
+                pn = [[NSDecimalNumber alloc] initWithString:tf.text];
+                pn_str = tf.text;
+            }
+        }
+        BOOL duplicatePlot = NO;
+        if (pn){
+            for(WastePlot* wp in wasteStratum.stratumPlot){
+                if( [wp.plotNumber integerValue] == [pn integerValue]){
+                    duplicatePlot = YES;
+                    break;
+                }
+            }
+        }
         
-        [warningAlert addAction:okAction];
-        [self presentViewController:warningAlert animated:YES completion:nil];
-    }else if(duplicatePlot){
-        UIAlertController* warningAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Duplicate Plot Number", nil)
-                                                                              message:@"Duplicate plot number, Select new plot number before proceeding."
-                                                                       preferredStyle:UIAlertControllerStyleAlert];
-        
-        UIAlertAction* okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault
-                                                         handler:^(UIAlertAction * action) {
-                                                             [self presentViewController:alert animated:YES completion:nil];
-                                                         }];
-        
-        [warningAlert addAction:okAction];
-        [self presentViewController:warningAlert animated:YES completion:nil];
-    }
-    else{
-        UIAlertController* confirmAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Confirm Estimation", nil)
-                                                                              message:[NSString stringWithFormat:@"Accept volume esimates? \n Plot Number %d \n Green Volume = %.2f \n Dry Volume = %.2f",[pn intValue], [gv floatValue], [dv floatValue]]
-                                                                       preferredStyle:UIAlertControllerStyleAlert];
-        
-        UIAlertAction* yesAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"YES", nil) style:UIAlertActionStyleDefault
-                                                          handler:^(UIAlertAction * action) {
-                                                              [self addRatioPlotAndNavigate:gv dryVolume:dv plotNumber:pn];
-                                                          }];
-        
-        UIAlertAction* noAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"NO", nil) style:UIAlertActionStyleDefault
-                                                         handler:^(UIAlertAction * action) {
-                                                             [self presentViewController:alert animated:YES completion:nil];
-                                                         }];
-        [confirmAlert addAction:yesAction];
-        [confirmAlert addAction:noAction];
-        [self presentViewController:confirmAlert animated:YES completion:nil];
+        if([pn_str isEqualToString:@""] || [gv_str isEqualToString:@""]){
+            UIAlertController* warningAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Missing Required Field", nil)
+                                                                                  message:@"Please enter Plot Number, Predicted Plot Volume."
+                                                                           preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction* okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction * action) {
+                                                                 [self presentViewController:alert animated:YES completion:nil];
+                                                             }];
+            
+            [warningAlert addAction:okAction];
+            [self presentViewController:warningAlert animated:YES completion:nil];
+        }else if(duplicatePlot){
+            UIAlertController* warningAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Duplicate Plot Number", nil)
+                                                                                  message:@"Duplicate plot number, Select new plot number before proceeding."
+                                                                           preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction* okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction * action) {
+                                                                 [self presentViewController:alert animated:YES completion:nil];
+                                                             }];
+            
+            [warningAlert addAction:okAction];
+            [self presentViewController:warningAlert animated:YES completion:nil];
+        }
+        else{
+            UIAlertController* confirmAlert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Confirm Estimation", nil)
+                                                                                  message:[NSString stringWithFormat:@"Accept volume estimate? \n Plot Number %d \n Predicted Plot Volume (m3)= %.2f",[pn intValue], [gv floatValue]]
+                                                                           preferredStyle:UIAlertControllerStyleAlert];
+            
+            UIAlertAction* yesAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"YES", nil) style:UIAlertActionStyleDefault
+                                                              handler:^(UIAlertAction * action) {
+                                                                  [self addRatioPlotAndNavigate:gv dryVolume:0 plotNumber:pn];
+                                                              }];
+            
+            UIAlertAction* noAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"NO", nil) style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction * action) {
+                                                                 [self presentViewController:alert animated:YES completion:nil];
+                                                             }];
+            [confirmAlert addAction:yesAction];
+            [confirmAlert addAction:noAction];
+            [self presentViewController:confirmAlert animated:YES completion:nil];
+        }
     }
 }
 
@@ -1947,8 +2070,8 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
     plotVC.wastePlot = wp;
     plotVC.wasteBlock = self.wasteBlock;
     
-    wasteStratum.ratioSamplingLog = [wasteStratum.ratioSamplingLog stringByAppendingString:[PlotSelectorLog getPlotSelectorLog:wp actionDec:@"New Plot Added"]];
-    
+    wasteStratum.ratioSamplingLog = [wasteStratum.ratioSamplingLog stringByAppendingString:[PlotSelectorLog getPlotSelectorLog:wp stratum:wasteStratum actionDec:@"New Plot Added"]];
+    wasteBlock.ratioSamplingLog = [wasteBlock.ratioSamplingLog stringByAppendingString:[PlotSelectorLog getPlotSelectorLog:wp stratum:wasteStratum actionDec:@"New Plot Added"]];
     //update the benchmak and calculate the numbers again
     [WasteCalculator calculateWMRF:self.wasteBlock updateOriginal:NO];
     [WasteCalculator calculateRate:self.wasteBlock ];
@@ -2069,7 +2192,8 @@ static NSString *const DEFAULT_ACCU_MEASURE_PLOT = @"4";
 -(void) deletePlot:(WastePlot *)targetWastePlot targetWastePlot:(WasteStratum *)targetWasteStratum{
     
     if([targetWasteStratum.stratumBlock.ratioSamplingEnabled integerValue]== 1){
-        wasteStratum.ratioSamplingLog = [wasteStratum.ratioSamplingLog stringByAppendingString:[PlotSelectorLog getPlotSelectorLog:targetWastePlot actionDec:@"Delete Plot"]];
+        wasteStratum.ratioSamplingLog = [wasteStratum.ratioSamplingLog stringByAppendingString:[PlotSelectorLog getPlotSelectorLog:targetWastePlot stratum:targetWasteStratum actionDec:@"Delete Plot"]];
+        wasteBlock.ratioSamplingLog = [wasteBlock.ratioSamplingLog stringByAppendingString:[PlotSelectorLog getPlotSelectorLog:targetWastePlot stratum:targetWasteStratum actionDec:@"Delete Plot"]];
     }
     
     NSManagedObjectContext *context = [self managedObjectContext];

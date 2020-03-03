@@ -86,15 +86,20 @@
         NSArray *ruId = [doc.rootElement elementsForName:@"reportingUnit"];
         NSArray *license = [doc.rootElement elementsForName:@"licenseNo"];
         NSArray *cpId = [doc.rootElement elementsForName:@"cuttingPermitID"];
-        
+        NSArray *regionId = [doc.rootElement elementsForName:@"regionId"];
         NSString *cbId_str = [cbId count] > 0 ? [cbId[0] stringValue] : @"";
         NSString *ruId_str = [ruId count] > 0 ? [ruId[0] stringValue ]: @"";
         NSString *license_str = [license count] > 0 ? [license[0] stringValue]: @"";
         NSString *cpId_str = [cpId count] > 0 ? [cpId[0] stringValue ]: @"";
 
         if (!igExist){
-            if( [WasteBlockDAO getWasteBlockByRU:ruId_str cutBlockId:cbId_str license:license_str cutPermit:cpId_str ]){
-                return ImportFailCutBlockExist;
+            WasteBlock *found = [WasteBlockDAO getWasteBlockByRU:ruId_str cutBlockId:cbId_str license:license_str cutPermit:cpId_str ];
+            if( found){
+                if([[found regionId] intValue] != [[(GDataXMLElement *)[regionId objectAtIndex:0] stringValue] intValue]){
+                    return ImportFailRegionIDExist;
+                }else{
+                    return ImportFailCutBlockExist;
+                }
             }
         }
         
@@ -135,6 +140,13 @@
                 targetObj = (NSManagedObject *) ptm;
             }else if([strAry[0] isEqualToString:@"WasteBlock"]){
                 targetObj = (NSManagedObject *) *wb;
+            }
+            if([strAry[1] isEqualToString:@"blockMaturityCode"]){
+                if([attStrValue isEqualToString:@"IMM"]){
+                    attStrValue = @"I";
+                }else if([attStrValue isEqualToString:@"MAT"]){
+                    attStrValue = @"M";
+                }
             }
             [self fillManagedObject:(NSManagedObject *)targetObj valueString:attStrValue dataTypeString:strAry[2] fieldName:strAry[1]];
         }else{

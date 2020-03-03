@@ -191,7 +191,6 @@
                 }
             }
         else{
-            //[self initNewTable];
         }
         }
     }
@@ -447,18 +446,18 @@
         [codeAry addObject:@"ScaleSpeciesCode;scaleSpeciesCode;YE;Yellow Pine;1/9/2014;;1/9/2014;"];
         
         //scale grade code
-        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;B;Peeler;1/9/2014;;1/9/2014;;C"];
-        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;C;Peeler;1/9/2014;;1/9/2014;;C"];
-        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;D;Lumber;1/9/2014;;1/9/2014;;C"];
-        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;F;Lumber;1/9/2014;;1/9/2014;;C"];
-        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;H;Sawlog;1/9/2014;;1/9/2014;;C"];
-        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;I;Sawlog;1/9/2014;;1/9/2014;;C"];
+        //[codeAry addObject:@"ScaleGradeCode;scaleGradeCode;B;Peeler;1/9/2014;;1/9/2014;;C"];
+        //[codeAry addObject:@"ScaleGradeCode;scaleGradeCode;C;Peeler;1/9/2014;;1/9/2014;;C"];
+        //[codeAry addObject:@"ScaleGradeCode;scaleGradeCode;D;Lumber;1/9/2014;;1/9/2014;;C"];
+        //[codeAry addObject:@"ScaleGradeCode;scaleGradeCode;F;Lumber;1/9/2014;;1/9/2014;;C"];
+        //[codeAry addObject:@"ScaleGradeCode;scaleGradeCode;H;Sawlog;1/9/2014;;1/9/2014;;C"];
+        //[codeAry addObject:@"ScaleGradeCode;scaleGradeCode;I;Sawlog;1/9/2014;;1/9/2014;;C"];
         [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;J;Gang Sawlog;1/9/2014;;1/9/2014;;C"];
-        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;K;Cedar Shingle;1/9/2014;;1/9/2014;;C"];
-        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;L;Cedar Shingle;1/9/2014;;1/9/2014;;C"];
-        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;M;Cedar Shingle;1/9/2014;;1/9/2014;;C"];
-        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;U;Utility Sawlog;1/9/2014;;1/9/2014;;C"];
+        //[codeAry addObject:@"ScaleGradeCode;scaleGradeCode;K;Cedar Shingle;1/9/2014;;1/9/2014;;C"];
+        //[codeAry addObject:@"ScaleGradeCode;scaleGradeCode;L;Cedar Shingle;1/9/2014;;1/9/2014;;C"];
+        //[codeAry addObject:@"ScaleGradeCode;scaleGradeCode;M;Cedar Shingle;1/9/2014;;1/9/2014;;C"];
         [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;W;Deciduous Sawlog;1/9/2014;;1/9/2014;;C"];
+        [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;U;Utility Sawlog;1/9/2014;;1/9/2014;;C"];
         [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;X;Chipper;1/9/2014;;1/9/2014;;C"];
         [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;Y;Lumber reject;1/9/2014;;1/9/2014;;C"];
         [codeAry addObject:@"ScaleGradeCode;scaleGradeCode;Z;Firmwood reject;1/9/2014;;1/9/2014;;C"];
@@ -578,12 +577,6 @@
         //interior Cedar maturity code
         [codeAry addObject:@"InteriorCedarMaturityCode;interiorCedarCode;L;Less than 141 years;1/9/2014;;1/9/2014;"];
         [codeAry addObject:@"InteriorCedarMaturityCode;interiorCedarCode;G;Greater than 141 years;2/9/2014;;1/9/2014;"];
-        
-        //pile shape code
-        /*[codeAry addObject:@"PileShapeCode;pileShapeCode;CN;Cone;1/9/2014;;1/9/2014;"];
-        [codeAry addObject:@"PileShapeCode;pileShapeCode;PAR;Half Paraboloid;1/9/2014;;1/9/2014;"];
-        [codeAry addObject:@"PileShapeCode;pileShapeCode;HC;Half Cylinder;1/9/2014;;1/9/2014;"];
-        [codeAry addObject:@"PileShapeCode;pileShapeCode;HE;Half Elipsoid;1/9/2014;;1/9/2014;"];*/
         
         //monetary reducton factor code
         [codeAry addObject:@"MonetaryReductionFactorCode;monetaryReductionFactorCode;A;Benchmark Applied;1/9/2014;;1/9/2014;"];
@@ -738,7 +731,9 @@
     NSMutableArray *tmpGradeCodes = [[NSMutableArray alloc] init];
     for(ScaleGradeCode *sgc in [codeDictionary objectForKey:@"ScaleGradeCode"]){
         if(regionId== CoastRegion && [sgc.areaType isEqualToString:@"C"]){
+            if(([sgc.scaleGradeCode isEqualToString:@"J"] || [sgc.scaleGradeCode isEqualToString:@"U"] || [sgc.scaleGradeCode isEqualToString:@"X"] || [sgc.scaleGradeCode isEqualToString:@"Y"] || [sgc.scaleGradeCode isEqualToString:@"Z"] || [sgc.scaleGradeCode isEqualToString:@"W"])){
             [tmpGradeCodes addObject:sgc];
+            }
         }else if(regionId == InteriorRegion && [sgc.areaType isEqualToString:@"I"]){
             [tmpGradeCodes addObject:sgc];
         }
