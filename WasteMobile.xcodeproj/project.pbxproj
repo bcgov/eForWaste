@@ -743,6 +743,7 @@
 			children = (
 				1534BB8919EF0CD4001D6123 /* WasteCalculator.h */,
 				1534BB8A19EF0CD4001D6123 /* WasteCalculator.m */,
+				150DDC7F1B12D7C5001083E3 /* WastePlotValidator.h */,
 				150DDC801B12D7C5001083E3 /* WastePlotValidator.m */,
 				15B5D78A1E4B8194008EB5D5 /* WasteImportBlockValidator.h */,
 				15B5D78B1E4B8194008EB5D5 /* WasteImportBlockValidator.m */,
@@ -789,7 +790,6 @@
 		15A5DF9619D384990075665E /* DTO */ = {
 			isa = PBXGroup;
 			children = (
-				150DDC7F1B12D7C5001083E3 /* WastePlotValidator.h */,
 				15A5DF9719D385AD0075665E /* SearchResultDTO.h */,
 				15A5DF9819D385AD0075665E /* SearchResultDTO.m */,
 				154464E319E498EC00E7959D /* WasteBlockDTO.h */,
@@ -1805,7 +1805,7 @@
 		15BF98A11E2EDC8E004D8F12 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "EForWasteBC-test";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "EForWasteBC-Prod";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-EForWaste";
 				CODE_SIGN_ENTITLEMENTS = EForWasteBC.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -1818,6 +1818,7 @@
 				INFOPLIST_FILE = "EForWasteBC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LIBRARY_SEARCH_PATHS = "";
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = EForWasteBCTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1831,7 +1832,7 @@
 		15BF98A21E2EDC8E004D8F12 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "EForWasteBC-test";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "EForWasteBC-Prod";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-EForWaste";
 				CODE_SIGN_ENTITLEMENTS = EForWasteBC.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -1844,6 +1845,7 @@
 				INFOPLIST_FILE = "EForWasteBC-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LIBRARY_SEARCH_PATHS = "";
+				MARKETING_VERSION = 1.4.2;
 				PRODUCT_BUNDLE_IDENTIFIER = EForWasteBCTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
